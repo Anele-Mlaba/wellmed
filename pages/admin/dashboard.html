@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Practice Dashboard — WellMed Admin</title>
+<meta name="robots" content="noindex,nofollow" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" /><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+<link rel="stylesheet" href="../../css/tokens.css" />
+<link rel="stylesheet" href="../../css/base.css" />
+<link rel="stylesheet" href="../../css/components.css" />
+<link rel="icon" type="image/svg+xml" href="../../assets/images/logo.svg" />
+</head>
+<body>
+
+<div class="admin-shell">
+  <aside class="admin-sidebar">
+    <h2>WellMed</h2>
+    <nav>
+      <a href="dashboard.html" class="is-active">Dashboard</a>
+      <a href="#bookings">Bookings</a>
+      <a href="#patients">Patients</a>
+      <a href="#analytics">Analytics</a>
+      <a href="#settings">Settings</a>
+    </nav>
+    <div style="margin-top: 3rem; padding: 1rem; border: 1px solid rgba(255, 253, 208, 0.2); border-radius: var(--radius-md); font-size: var(--fs-xs); color: rgba(255, 253, 208, 0.7);">
+      Logged in as <strong style="color: var(--color-cream); font-weight: 600;">Dr Moodley</strong><br/>
+      <a href="../../index.html" style="color: var(--color-tea);">← Back to site</a>
+    </div>
+  </aside>
+
+  <main class="admin-main">
+    <div class="d-flex justify-content-between align-items-end" style="margin-bottom: var(--space-6); flex-wrap: wrap; gap: 1rem;">
+      <div>
+        <span class="eyebrow" style="margin-bottom: 0.25rem;">Practice Dashboard</span>
+        <h1 style="font-size: clamp(1.8rem, 3vw, 2.4rem); margin: 0;">Good afternoon, Dr Moodley.</h1>
+        <p class="muted" style="margin: 0.25rem 0 0;">Here's the state of the practice today.</p>
+      </div>
+      <div style="display:flex; gap: 0.5rem;">
+        <button class="btn-wm btn-wm--ghost btn-wm--sm">Export CSV</button>
+        <button class="btn-wm btn-wm--primary btn-wm--sm">+ New Booking</button>
+      </div>
+    </div>
+
+    <!-- KPIs -->
+    <div class="kpi-grid">
+      <div class="kpi"><div class="kpi__label">Total Bookings</div><div class="kpi__value" id="kpiTotal">–</div><div class="kpi__delta">↑ 12% vs last week</div></div>
+      <div class="kpi"><div class="kpi__label">Upcoming</div><div class="kpi__value" id="kpiUpcoming">–</div><div class="kpi__delta">Next 7 days</div></div>
+      <div class="kpi"><div class="kpi__label">Completed</div><div class="kpi__value" id="kpiCompleted">–</div><div class="kpi__delta">↑ 8% vs last week</div></div>
+      <div class="kpi"><div class="kpi__label">No-Show Rate</div><div class="kpi__value" id="kpiNoShow">–</div><div class="kpi__delta" style="color: var(--color-warn);">Watch closely</div></div>
+    </div>
+
+    <!-- Filters + table -->
+    <section id="bookings" style="margin-bottom: var(--space-7);">
+      <div class="d-flex justify-content-between align-items-end" style="margin-bottom: 1.25rem; flex-wrap: wrap; gap: 1rem;">
+        <h2 style="margin: 0;">Bookings</h2>
+        <div class="form-wm" style="display:flex; gap: 0.75rem; flex-wrap: wrap; align-items: end;">
+          <div class="field" style="margin-bottom:0;"><label for="fStatus" style="margin-bottom:4px;">Status</label><select id="fStatus" style="min-width: 140px;"><option value="">All</option><option value="confirmed">Confirmed</option><option value="pending">Pending</option><option value="completed">Completed</option><option value="noshow">No-show</option></select></div>
+          <div class="field" style="margin-bottom:0;"><label for="fService" style="margin-bottom:4px;">Service</label><select id="fService" style="min-width: 160px;"><option value="">All</option></select></div>
+          <div class="field" style="margin-bottom:0;"><label for="fDate" style="margin-bottom:4px;">Date</label><input id="fDate" type="date" /></div>
+          <button id="fClear" class="btn-wm btn-wm--ghost btn-wm--sm">Clear</button>
+        </div>
+      </div>
+
+      <div style="overflow-x: auto;">
+        <table class="table-wm">
+          <thead>
+            <tr>
+              <th>Patient</th>
+              <th>Service</th>
+              <th>When</th>
+              <th>Status</th>
+              <th>Medical Aid</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="bookingsBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Analytics row -->
+    <section id="analytics">
+      <div class="row g-4">
+        <div class="col-lg-7">
+          <div class="kpi" style="padding: var(--space-6);">
+            <div class="kpi__label" style="margin-bottom: 1.25rem;">Service Mix · Last 30 days</div>
+            <div id="serviceMix"></div>
+          </div>
+        </div>
+        <div class="col-lg-5">
+          <div class="kpi" style="padding: var(--space-6); margin-bottom: 1rem;">
+            <div class="kpi__label" style="margin-bottom: 1rem;">Patient Gender Split</div>
+            <div id="genderMix"></div>
+            <p class="muted" style="font-size: var(--fs-xs); margin: 0;">Voluntary self-identification · POPIA-compliant.</p>
+          </div>
+          <div class="kpi" style="padding: var(--space-6);">
+            <div class="kpi__label" style="margin-bottom: 1rem;">Age Bands</div>
+            <table class="table-wm" style="border:none;"><tbody id="ageTable"></tbody></table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <p class="muted" style="margin-top: 2.5rem; font-size: var(--fs-xs);">
+      Currently rendering with mock data. Live data will appear once the backend is deployed and pointed at <code>/api/admin/bookings</code>. See <code>/docs/BACKEND_API_CONTRACT.md</code>.
+    </p>
+  </main>
+</div>
+
+<script src="../../js/config.js"></script>
+<script src="../../js/icons.js"></script>
+<script src="../../js/admin.js"></script>
+</body>
+</html>

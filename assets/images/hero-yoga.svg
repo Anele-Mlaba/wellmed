@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="gy" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#cddf9d"/>
+      <stop offset="100%" stop-color="#fffdd0"/>
+    </linearGradient>
+  </defs>
+  <rect width="1600" height="900" fill="url(#gy)"/>
+  <!-- Lotus / yoga seated figure silhouette -->
+  <g transform="translate(1180 480)" opacity="0.55">
+    <!-- Mat -->
+    <ellipse cx="0" cy="160" rx="220" ry="22" fill="#5e5e00" opacity="0.8"/>
+    <!-- Body -->
+    <path d="M -120 130 Q -150 50 -90 30 Q -40 18 0 22 Q 40 18 90 30 Q 150 50 120 130 Z" fill="#808000"/>
+    <!-- Head -->
+    <circle cx="0" cy="-30" r="44" fill="#808000"/>
+    <!-- Arms in mudra -->
+    <path d="M -90 60 Q -150 80 -180 130 Q -160 130 -100 110" fill="#808000"/>
+    <path d="M 90 60 Q 150 80 180 130 Q 160 130 100 110" fill="#808000"/>
+    <!-- Lotus petals at base -->
+    <ellipse cx="-160" cy="158" rx="40" ry="14" fill="#a3a341" opacity="0.7"/>
+    <ellipse cx="160" cy="158" rx="40" ry="14" fill="#a3a341" opacity="0.7"/>
+  </g>
+  <g opacity="0.4">
+    <circle cx="320" cy="220" r="120" fill="#fffdd0"/>
+    <ellipse cx="220" cy="720" rx="280" ry="100" fill="#a3a341"/>
+  </g>
+  <!-- Decorative leaves -->
+  <g transform="translate(180 180)" opacity="0.45">
+    <ellipse cx="20" cy="20" rx="28" ry="12" fill="#5e5e00" transform="rotate(35 20 20)"/>
+    <ellipse cx="60" cy="60" rx="30" ry="13" fill="#808000" transform="rotate(50 60 60)"/>
+  </g>
+</svg>

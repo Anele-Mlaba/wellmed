@@ -1,0 +1,31 @@
+/* Coolors Exported Palette - https://coolors.co/fefefe-fffdd0-d38d3d-808000-cddf9d */
+
+- CSV
+
+fefefe,fffdd0,d38d3d,808000,cddf9d
+
+- With #
+
+#fefefe, #fffdd0, #d38d3d, #808000, #cddf9d
+
+- Array
+
+["fefefe","fffdd0","d38d3d","808000","cddf9d"]
+
+- Object
+
+{"White":"fefefe","Cream":"fffdd0","Golden Apricot":"d38d3d","Olive":"808000","Tea Green":"cddf9d"}
+
+- Extended Array
+
+[{"name":"White","hex":"fefefe","rgb":[254,254,254],"cmyk":[0,0,0,0],"hsb":[0,0,100],"hsl":[0,0,100],"lab":[100,0,0]},{"name":"Cream","hex":"fffdd0","rgb":[255,253,208],"cmyk":[0,1,18,0],"hsb":[57,18,100],"hsl":[57,100,91],"lab":[98,-6,22]},{"name":"Golden Apricot","hex":"d38d3d","rgb":[211,141,61],"cmyk":[0,33,71,17],"hsb":[32,71,83],"hsl":[32,63,53],"lab":[64,19,52]},{"name":"Olive","hex":"808000","rgb":[128,128,0],"cmyk":[0,0,100,50],"hsb":[60,100,50],"hsl":[60,100,25],"lab":[52,-13,57]},{"name":"Tea Green","hex":"cddf9d","rgb":[205,223,157],"cmyk":[8,0,30,13],"hsb":[76,30,87],"hsl":[76,51,75],"lab":[86,-17,30]}]
+
+- XML
+
+<palette>
+  <color name="White" hex="fefefe" r="254" g="254" b="254" />
+  <color name="Cream" hex="fffdd0" r="255" g="253" b="208" />
+  <color name="Golden Apricot" hex="d38d3d" r="211" g="141" b="61" />
+  <color name="Olive" hex="808000" r="128" g="128" b="0" />
+  <color name="Tea Green" hex="cddf9d" r="205" g="223" b="157" />
+</palette>
