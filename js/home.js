@@ -17,7 +17,7 @@
 
     let timer;
     const tick = () => setActive((i + 1) % total);
-    const start = () => { timer = setInterval(tick, 6000); };
+    const start = () => { timer = setInterval(tick, 9000); };
     const restart = () => { clearInterval(timer); start(); };
     start();
 

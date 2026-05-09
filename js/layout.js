@@ -22,7 +22,6 @@
       ]
     },
     { label: "Art of Living", href: url("pages/art-of-living.html") },
-    { label: "Reviews", href: url("pages/reviews.html") },
     { label: "Contact", href: url("pages/contact.html") }
   ];
 
@@ -59,7 +58,7 @@
         <div class="container-wm nav-wm__inner">
           <a class="nav-wm__logo" href="${url("index.html")}" aria-label="WellMed home">
             <img src="${url("assets/images/logo.svg")}" alt="WellMed logo" />
-            <span class="nav-wm__brand">WellMed<small>Medical Care · Longevity · Wellness</small></span>
+            <span class="nav-wm__brand">WellMed</span>
           </a>
           <ul class="nav-wm__menu d-lg-flex" role="menubar">${buildDesktopMenu()}</ul>
           <div class="nav-wm__cta">
@@ -86,6 +85,11 @@
     };
     setNavHeight();
     window.addEventListener("resize", setNavHeight);
+    window.addEventListener("load", setNavHeight);
+    // Recalculate once images (logo) settle — fonts/images can change row height
+    if (window.ResizeObserver) {
+      new ResizeObserver(setNavHeight).observe(nav);
+    }
 
     // Mobile menu toggle
     const burger = document.getElementById("navBurger");

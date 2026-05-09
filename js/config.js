@@ -2,17 +2,17 @@
 window.WM = window.WM || {};
 
 WM.brand = {
-  name: "WellMed Wellness",
+  name: "WellMed",
   tagline: "GP & Holistic Healing",
   doctor: "Dr Moodley",
-  phone: "+27 31 000 0000",
-  whatsapp: "+27 82 000 0000",
-  email: "hello@wellmed.co.za",
-  address: "Umhlanga Ridge, Durban, KwaZulu-Natal",
+  phone: "+27 74 915 2513",
+  whatsapp: "+27 74 915 2513",
+  email: "k.moodley@wellmed.org.za",
+  address: "4 Lagoon Dr, Umhlanga, uMhlanga, 4320, South Africa",
   hours: [
     { day: "Mon – Fri", hours: "08:00 – 17:00" },
-    { day: "Saturday",  hours: "09:00 – 13:00" },
-    { day: "Sunday",    hours: "By appointment" }
+    { day: "Saturday",  hours: "09:00 – 14:00" },
+    { day: "Sunday",    hours: "09:00 – 12:30" }
   ],
   social: {
     instagram: "#",
@@ -27,7 +27,7 @@ WM.services = [
   { slug: "ozone-therapy",    title: "Ozone Therapy",       tagline: "Cellular wellness",         icon: "spark" },
   { slug: "red-light-therapy",title: "Red Light Therapy",   tagline: "Recover & glow",            icon: "sun" },
   { slug: "weight-loss",      title: "Medical Weight Loss", tagline: "Sustainable transformation",icon: "scale" },
-  { slug: "yoga-breathwork",  title: "Yoga · Breathwork",   tagline: "Move, breathe, restore",    icon: "leaf" }
+  { slug: "yoga",  title: "Yoga",   tagline: "Move, breathe, restore",    icon: "leaf" }
 ];
 
 /* Backend API contract — defined in /docs/BACKEND_API_CONTRACT.md.
