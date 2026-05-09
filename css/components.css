@@ -572,10 +572,14 @@
 }
 @media (max-width: 991px) {
   .hero__inner--split { grid-template-columns: 1fr; }
-  .hero__portrait { max-width: 360px; justify-self: center; }
+  .hero__portrait { max-width: clamp(220px, 38vw, 360px); justify-self: center; }
+  .hero__portrait--bleed { max-width: clamp(240px, 42vw, 420px); }
+  .hero__portrait--bleed img { max-height: clamp(220px, 38vw, 380px); }
 }
-@media (max-width: 991px) {
-  .hero__portrait { display: none; }   /* show slide imagery on large displays only */
+
+/* Hide hero imagery only at mobile — copy stays readable on its own. */
+@media (max-width: 575.98px) {
+  .hero__portrait { display: none; }
 }
 
 /* ----- Slide variants: solid cream background + left-positioned portrait ----- */
