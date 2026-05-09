@@ -69,8 +69,8 @@
             </button>
           </div>
         </div>
-        <div class="nav-wm__mobile" id="navMobile">${buildMobileMenu()}</div>
       </nav>
+      <div class="nav-wm__mobile" id="navMobile">${buildMobileMenu()}</div>
     `;
 
     // Scroll behaviour
