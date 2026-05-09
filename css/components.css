@@ -574,8 +574,8 @@
   .hero__inner--split { grid-template-columns: 1fr; }
   .hero__portrait { max-width: 360px; justify-self: center; }
 }
-@media (max-width: 575px) {
-  .hero__portrait { display: none; }   /* keep the slide tight on phones */
+@media (max-width: 991px) {
+  .hero__portrait { display: none; }   /* show slide imagery on large displays only */
 }
 
 /* ----- Slide variants: solid cream background + left-positioned portrait ----- */
