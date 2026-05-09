@@ -390,6 +390,8 @@
     overflow-y: auto;
     z-index: 1019;
   }
+  /* Cover the slideshow but keep the nav bar (with the close-X burger) visible. */
+  .nav-wm__mobile.is-open { z-index: 1021; }
   .nav-wm__mobile.is-open { transform: none; }
   .nav-wm__mobile ul { list-style: none; padding: 0; margin: 0; }
   .nav-wm__mobile li { border-bottom: 1px solid var(--color-line-soft); }
