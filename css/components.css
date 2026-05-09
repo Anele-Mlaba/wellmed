@@ -577,9 +577,37 @@
   .hero__portrait--bleed img { max-height: clamp(220px, 38vw, 380px); }
 }
 
-/* Hide hero imagery only at mobile — copy stays readable on its own. */
+/* Mobile: hide imagery and reformat the hero copy so it fits the phone neatly. */
 @media (max-width: 575.98px) {
   .hero__portrait { display: none; }
+
+  .hero { min-height: clamp(440px, 78vh, 640px); }
+
+  .hero__inner { padding: var(--space-7) var(--container-pad) var(--space-6); }
+  .hero__inner--split { gap: var(--space-4); }
+
+  .hero__copy .eyebrow { margin-bottom: var(--space-3); font-size: 0.72rem; }
+
+  .hero__title {
+    font-size: clamp(1.75rem, 7.5vw, 2.25rem);
+    line-height: 1.1;
+    margin-bottom: var(--space-4);
+    max-width: none;
+  }
+
+  .hero__lead {
+    font-size: 1rem;
+    line-height: 1.55;
+    margin-bottom: var(--space-5);
+    max-width: none;
+    font-weight: 400;
+  }
+
+  .hero__cta { flex-direction: column; align-items: stretch; gap: var(--space-3); width: 100%; }
+  .hero__cta .btn-wm { width: 100%; }
+  .hero__cta .btn-wm--lg { padding: 0.9rem 1.5rem; font-size: var(--fs-sm); }
+
+  .hero__dots { bottom: 18px; }
 }
 
 /* ----- Slide variants: solid cream background + left-positioned portrait ----- */
