@@ -15,9 +15,9 @@ WM.brand = {
     { day: "Sunday",    hours: "09:00 – 12:30" }
   ],
   social: {
-    instagram: "#",
+    instagram: "https://www.instagram.com/dr_k_moodley/",
     facebook: "#",
-    google: "#"
+    google: "https://maps.app.goo.gl/abfBM6jzEtEuQZQy5"
   }
 };
 

@@ -132,12 +132,11 @@
             <div class="col-lg-4 col-md-6">
               <div class="footer-wm__brand">WellMed</div>
               <p style="color: rgba(255, 253, 208, 0.75); max-width: 38ch;">
-                A holistic medical practice in Umhlanga where modern GP care meets ancient healing traditions —
+                A holistic medical practice in Umhlanga where modern GP care meets ancient healing traditions 
                 under the gentle, expert hands of ${WM.brand.doctor}.
               </p>
               <div style="display:flex; gap: 0.75rem; margin-top: 1.25rem;">
                 <a href="${WM.brand.social.instagram}" aria-label="Instagram" style="opacity: 0.8;">Instagram</a>
-                <a href="${WM.brand.social.facebook}" aria-label="Facebook" style="opacity: 0.8;">Facebook</a>
                 <a href="${WM.brand.social.google}" aria-label="Google" style="opacity: 0.8;">Google</a>
               </div>
             </div>
@@ -164,8 +163,8 @@
             </div>
           </div>
           <div class="footer-wm__bottom">
-            <span>© ${new Date().getFullYear()} WellMed Wellness. All rights reserved.</span>
-            <span>Practice No. 0000000 · HPCSA Registered · POPIA compliant</span>
+            <span>© ${new Date().getFullYear()} WellMed. All rights reserved.</span>
+            <span>HPCSA Registered · POPIA compliant</span>
           </div>
         </div>
       </footer>
