@@ -176,6 +176,7 @@
 .form-wm input[type="tel"],
 .form-wm input[type="date"],
 .form-wm input[type="number"],
+.form-wm input[type="password"],
 .form-wm select,
 .form-wm textarea {
   width: 100%;
@@ -956,7 +957,19 @@
 }
 .slot:hover { border-color: var(--color-olive); color: var(--color-olive-deep); }
 .slot.is-selected { background: var(--color-olive); color: var(--color-cream); border-color: var(--color-olive); }
-.slot:disabled { opacity: 0.4; cursor: not-allowed; }
+.slot:disabled,
+.slot.is-disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  background: var(--color-line-soft);
+  text-decoration: line-through;
+  pointer-events: none;
+}
+.slot:disabled:hover,
+.slot.is-disabled:hover {
+  border-color: var(--color-line);
+  color: var(--color-ink);
+}
 
 /* Service select tiles */
 .service-tile {
@@ -1040,6 +1053,30 @@
   background: rgba(255, 253, 208, 0.1);
   color: var(--color-cream);
 }
+.admin-user-card {
+  margin-top: 3rem;
+  padding: 1rem 1.1rem;
+  border: 1px solid rgba(255, 253, 208, 0.18);
+  border-radius: var(--radius-md);
+  font-size: var(--fs-xs);
+  color: rgba(255, 253, 208, 0.7);
+  line-height: 1.5;
+}
+.admin-user-card__name {
+  display: block;
+  color: var(--color-cream);
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+}
+.admin-user-card a {
+  display: block;
+  padding: 0.4rem 0;
+  color: var(--color-tea);
+  text-decoration: none;
+  border-top: 1px solid rgba(255, 253, 208, 0.1);
+  transition: color var(--dur-fast) var(--ease-out);
+}
+.admin-user-card a:hover { color: var(--color-cream); }
 .admin-main { padding: var(--space-6) var(--space-7); }
 .kpi-grid {
   display: grid;

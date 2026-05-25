@@ -1,35 +1,74 @@
 /* WellMed — Admin dashboard
-   Wired to GET /api/admin/bookings (see BACKEND_API_CONTRACT.md).
-   Falls back to mock data so the dashboard is fully testable pre-backend.
+   Wired to /api/admin/* (see BACKEND_API_CONTRACT.md).
+   Shows a login overlay when no JWT is present or the token is rejected.
 */
 (function () {
-  const FALLBACK_BOOKINGS = [
-    { id: "WM-1042", patient: "Nadia Pillay",     service: "iv-therapy",       slot: "2026-05-09T09:30:00", status: "confirmed",  source: "online",  ageBand: "35-44", gender: "F", medicalAid: "Discovery" },
-    { id: "WM-1041", patient: "Thandi Mokoena",   service: "gp-practice",      slot: "2026-05-09T10:00:00", status: "confirmed",  source: "online",  ageBand: "25-34", gender: "F", medicalAid: "Bonitas" },
-    { id: "WM-1040", patient: "Rashid Khan",      service: "ozone-therapy",    slot: "2026-05-09T11:00:00", status: "pending",    source: "phone",   ageBand: "45-54", gender: "M", medicalAid: "—" },
-    { id: "WM-1039", patient: "Priya Singh",      service: "gp-practice",      slot: "2026-05-09T13:30:00", status: "confirmed",  source: "online",  ageBand: "35-44", gender: "F", medicalAid: "Momentum" },
-    { id: "WM-1038", patient: "Lerato Ndlovu",    service: "iv-therapy",       slot: "2026-05-08T15:00:00", status: "completed",  source: "online",  ageBand: "25-34", gender: "F", medicalAid: "—" },
-    { id: "WM-1037", patient: "Anika Reddy",      service: "weight-loss",      slot: "2026-05-08T14:00:00", status: "completed",  source: "online",  ageBand: "35-44", gender: "F", medicalAid: "Discovery" },
-    { id: "WM-1036", patient: "Dean v. d. Merwe", service: "red-light-therapy",slot: "2026-05-07T16:30:00", status: "noshow",     source: "online",  ageBand: "55+",   gender: "M", medicalAid: "Profmed" },
-    { id: "WM-1035", patient: "Sarah Jacobs",     service: "yoga-breathwork",  slot: "2026-05-07T18:30:00", status: "completed",  source: "online",  ageBand: "35-44", gender: "F", medicalAid: "—" },
-    { id: "WM-1034", patient: "Michelle Botha",   service: "gp-practice",      slot: "2026-05-07T09:00:00", status: "completed",  source: "phone",   ageBand: "55+",   gender: "F", medicalAid: "Discovery" },
-    { id: "WM-1033", patient: "Kabelo Mthembu",   service: "ozone-therapy",    slot: "2026-05-06T10:30:00", status: "completed",  source: "online",  ageBand: "45-54", gender: "M", medicalAid: "Bonitas" },
-    { id: "WM-1032", patient: "Zanele Mkhize",    service: "iv-therapy",       slot: "2026-05-06T13:00:00", status: "noshow",     source: "online",  ageBand: "25-34", gender: "F", medicalAid: "—" },
-    { id: "WM-1031", patient: "Hassan Patel",     service: "weight-loss",      slot: "2026-05-05T11:30:00", status: "completed",  source: "online",  ageBand: "35-44", gender: "M", medicalAid: "Discovery" }
-  ];
-
   let bookings = [];
   const $ = (s) => document.querySelector(s);
 
   async function load() {
+    if (!sessionStorage.getItem("wm_admin_token")) {
+      showLogin();
+      return;
+    }
     try {
-      // const r = await fetch(WM.api.endpoints.listBookings, { headers: { "Authorization": "Bearer …" } });
-      // bookings = await r.json();
-      throw new Error("backend not deployed");
-    } catch (_) {
-      bookings = FALLBACK_BOOKINGS;
+      const r = await fetch(WM.api.url(WM.api.endpoints.listBookings), { headers: WM.api.authHeaders() });
+      if (r.status === 401 || r.status === 403) {
+        sessionStorage.removeItem("wm_admin_token");
+        showLogin();
+        return;
+      }
+      if (!r.ok) throw new Error("listBookings " + r.status);
+      bookings = await r.json();
+    } catch (e) {
+      alert("Couldn't load bookings: " + (e.message || e));
+      bookings = [];
     }
     render();
+  }
+
+  function showLogin() {
+    if (document.getElementById("wmLoginOverlay")) return;
+    const overlay = document.createElement("div");
+    overlay.id = "wmLoginOverlay";
+    overlay.style.cssText = "position:fixed; inset:0; background:rgba(15,23,18,0.85); display:grid; place-items:center; z-index:9999;";
+    overlay.innerHTML = `
+      <form id="wmLoginForm" class="form-wm" style="background:var(--color-cream); padding:2rem 2.25rem; border-radius:var(--radius-md); width:min(360px, 92vw); box-shadow:0 12px 40px rgba(0,0,0,0.35);">
+        <h3 style="margin:0 0 0.25rem;">Admin sign in</h3>
+        <p class="muted" style="font-size: var(--fs-sm); margin: 0 0 1.25rem;">Restricted area · Dr Moodley</p>
+        <div class="field"><label for="wmLoginEmail">Email</label><input id="wmLoginEmail" type="email" required autocomplete="username" /></div>
+        <div class="field"><label for="wmLoginPassword">Password</label><input id="wmLoginPassword" type="password" required autocomplete="current-password" /></div>
+        <div id="wmLoginError" style="display:none; color: var(--color-warn); font-size: var(--fs-sm); margin-bottom: 0.75rem;"></div>
+        <button type="submit" class="btn-wm btn-wm--primary" style="width:100%;">Sign in</button>
+      </form>
+    `;
+    document.body.appendChild(overlay);
+    document.getElementById("wmLoginForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const email = document.getElementById("wmLoginEmail").value.trim();
+      const password = document.getElementById("wmLoginPassword").value;
+      const errEl = document.getElementById("wmLoginError");
+      const btn = e.target.querySelector("button[type='submit']");
+      errEl.style.display = "none";
+      btn.disabled = true; btn.textContent = "Signing in…";
+      try {
+        const r = await fetch(WM.api.url(WM.api.endpoints.adminLogin), {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password })
+        });
+        if (!r.ok) throw new Error(r.status === 401 ? "Invalid email or password." : "Sign-in failed (" + r.status + ").");
+        const data = await r.json();
+        if (!data.token) throw new Error("Sign-in succeeded but no token returned.");
+        sessionStorage.setItem("wm_admin_token", data.token);
+        overlay.remove();
+        load();
+      } catch (err) {
+        errEl.textContent = err.message || "Sign-in failed.";
+        errEl.style.display = "block";
+        btn.disabled = false; btn.textContent = "Sign in";
+      }
+    });
   }
 
   function render() {
@@ -147,6 +186,13 @@
     $("#fClear").addEventListener("click", () => {
       $("#fStatus").value = ""; $("#fService").value = ""; $("#fDate").value = "";
       renderTable();
+    });
+
+    const logout = document.getElementById("wmLogout");
+    if (logout) logout.addEventListener("click", (e) => {
+      e.preventDefault();
+      sessionStorage.removeItem("wm_admin_token");
+      location.reload();
     });
 
     load();

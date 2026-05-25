@@ -52,18 +52,22 @@
   /* -------- Step 2: Date + slot -------- */
   function renderDate() {
     const today = new Date();
-    const min = new Date(today.getTime() + 24*60*60*1000); // earliest tomorrow
     const max = new Date(today.getTime() + 60*24*60*60*1000); // 60 days
-    const fmt = (d) => d.toISOString().split("T")[0];
+    const fmt = (d) => {
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      return `${y}-${m}-${day}`;
+    };
     const input = $("#bookDate");
-    input.min = fmt(min);
+    input.min = fmt(today);
     input.max = fmt(max);
-    input.value = fmt(min);
+    input.value = fmt(today);
     input.addEventListener("change", () => loadSlots(input.value));
-    loadSlots(input.value);
   }
 
   async function loadSlots(date) {
+    if (!state.service) return;
     state.date = date;
     state.slot = null;
     $("#nextBtn2").disabled = true;
@@ -72,23 +76,28 @@
 
     let slots = [];
     try {
-      // Real call (backend per BACKEND_API_CONTRACT.md):
-      // const r = await fetch(`${WM.api.endpoints.availableSlots}?service=${state.service}&date=${date}`);
-      // slots = await r.json();
-      throw new Error("backend not deployed");
-    } catch (_) {
-      // Fallback: synthesise plausible slots so the UX is testable end-to-end
-      slots = synthesiseSlots(date);
+      const url = WM.api.url(WM.api.endpoints.availableSlots) +
+        `?service=${encodeURIComponent(state.service)}&date=${encodeURIComponent(date)}`;
+      const r = await fetch(url);
+      if (!r.ok) throw new Error("availability " + r.status);
+      slots = await r.json();
+    } catch (e) {
+      grid.innerHTML = `<div class="muted" style="grid-column: 1/-1; text-align: center; padding: 2rem;">We couldn't load times right now. Please try again in a moment or call the practice.</div>`;
+      return;
     }
+
+    const now = Date.now();
+    slots = slots.filter(s => new Date(s.start).getTime() > now);
 
     if (!slots.length) {
       grid.innerHTML = `<div class="muted" style="grid-column: 1/-1; text-align: center; padding: 2rem;">No availability on this day. Try another date.</div>`;
       return;
     }
 
-    grid.innerHTML = slots.map(s =>
-      `<button type="button" class="slot${s.available ? "" : " is-disabled"}" data-slot="${s.start}" ${s.available ? "" : "disabled"}>${s.label}</button>`
-    ).join("");
+    grid.innerHTML = slots.map(s => {
+      const available = s.available === true;
+      return `<button type="button" class="slot${available ? "" : " is-disabled"}" data-slot="${s.start}" ${available ? "" : "disabled aria-disabled=\"true\""}>${s.label}</button>`;
+    }).join("");
     grid.querySelectorAll(".slot:not([disabled])").forEach(btn => {
       btn.addEventListener("click", () => {
         grid.querySelectorAll(".slot").forEach(b => b.classList.remove("is-selected"));
@@ -97,25 +106,6 @@
         $("#nextBtn2").disabled = false;
       });
     });
-  }
-
-  function synthesiseSlots(date) {
-    const d = new Date(date + "T00:00:00");
-    const dow = d.getDay(); // 0=Sun
-    if (dow === 0) return []; // Sunday by appointment
-    const startH = 8;
-    const endH = (dow === 6) ? 13 : 17;
-    const slots = [];
-    for (let h = startH; h < endH; h++) {
-      ["00","30"].forEach(m => {
-        // Pseudo-random availability based on the date string
-        const seed = (date + h + m).split("").reduce((a,c)=>a+c.charCodeAt(0),0);
-        const available = seed % 5 !== 0; // ~80% available
-        const label = `${String(h).padStart(2,"0")}:${m}`;
-        slots.push({ start: `${date}T${label}:00`, label, available });
-      });
-    }
-    return slots;
   }
 
   /* -------- Step 3: Personal + Medical Aid -------- */
@@ -191,18 +181,22 @@
       submittedAt: new Date().toISOString()
     };
 
-    // Real submission (backend per BACKEND_API_CONTRACT.md):
-    // const r = await fetch(WM.api.endpoints.submitBooking, {
-    //   method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify(payload)
-    // });
-    // const data = await r.json();
+    const idemKey = (crypto && crypto.randomUUID) ? crypto.randomUUID() : String(Date.now()) + Math.random();
+    const r = await fetch(WM.api.url(WM.api.endpoints.submitBooking), {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Idempotency-Key": idemKey },
+      body: JSON.stringify(payload)
+    });
 
-    // Local queue fallback (so the UX completes even before backend is live)
-    try {
-      const q = JSON.parse(localStorage.getItem("wm_booking_queue") || "[]");
-      q.push(payload);
-      localStorage.setItem("wm_booking_queue", JSON.stringify(q));
-    } catch (_) {}
+    if (!r.ok) {
+      const err = await r.json().catch(() => ({}));
+      if (err.error === "slot_unavailable") throw new Error("That slot was just taken. Please pick another time.");
+      if (err.error === "validation")       throw new Error("Some details are invalid. Please review the form.");
+      if (err.error === "rate_limited")     throw new Error("Too many attempts. Please wait a moment and try again.");
+      throw new Error(err.error || "submit_failed");
+    }
+
+    state.result = await r.json();
 
     // Show confirmation
     const svc = WM.services.find(s => s.slug === state.service)?.title || state.service;
@@ -226,11 +220,16 @@
       el.classList.toggle("is-active", i+1 === n);
       el.classList.toggle("is-done", i+1 < n);
     });
-    window.scrollTo({ top: $("#bookingTop").offsetTop - 80, behavior: "smooth" });
+    const anchor = document.getElementById("bookingTop");
+    if (anchor) window.scrollTo({ top: anchor.offsetTop - 80, behavior: "smooth" });
   }
 
   function bindNav() {
-    $("#nextBtn1").addEventListener("click", () => { if (state.service) goTo(2); });
+    $("#nextBtn1").addEventListener("click", () => {
+      if (!state.service) return;
+      goTo(2);
+      loadSlots($("#bookDate").value);
+    });
     $("#prevBtn2").addEventListener("click", () => goTo(1));
     $("#nextBtn2").addEventListener("click", () => { if (state.slot) goTo(3); });
     $("#prevBtn3").addEventListener("click", () => goTo(2));
@@ -247,7 +246,7 @@
       } catch (e) {
         btn.disabled = false;
         btn.textContent = "Confirm Appointment →";
-        alert("Something went wrong. Please try again or call the practice.");
+        alert(e && e.message ? e.message : "Something went wrong. Please try again or call the practice.");
       }
     });
   }
