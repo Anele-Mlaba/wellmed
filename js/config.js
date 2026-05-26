@@ -7,7 +7,7 @@ WM.brand = {
   doctor: "Dr Moodley",
   phone: "+27 74 915 2513",
   whatsapp: "+27 74 915 2513",
-  email: "k.moodley@wellmed.org.za",
+  email: "drmoodley17@gmail.com",
   address: "4 Lagoon Dr, Umhlanga, uMhlanga, 4320, South Africa",
   hours: [
     { day: "Mon – Fri", hours: "08:00 – 17:00" },
@@ -27,19 +27,31 @@ WM.services = [
   { slug: "ozone-therapy",    title: "Ozone Therapy",       tagline: "Cellular wellness",         icon: "spark" },
   { slug: "red-light-therapy",title: "Red Light Therapy",   tagline: "Recover & glow",            icon: "sun" },
   { slug: "weight-loss",      title: "Medical Weight Loss", tagline: "Sustainable transformation",icon: "scale" },
-  { slug: "yoga",  title: "Yoga",   tagline: "Move, breathe, restore",    icon: "leaf" }
+  { slug: "yoga-breathwork", title: "Yoga", tagline: "Move, breathe, restore", icon: "leaf" }
 ];
 
-/* Backend API contract — defined in /docs/BACKEND_API_CONTRACT.md.
-   Until the backend exists, the booking form posts to this stub URL and
-   gracefully falls back to a "queued" success state. */
+/* Backend API — deployed on AWS (eu-west-1). Contract: /docs/BACKEND_API_CONTRACT.md.
+   The booking form still falls back to local-queue if the network call fails,
+   and availability falls back to synthesised slots per the contract. */
 WM.api = {
-  baseUrl: "/api",
+  baseUrl: "https://u9j667n1bb.execute-api.eu-west-1.amazonaws.com",
   endpoints: {
-    availableSlots: "/api/availability",
-    submitBooking:  "/api/bookings",
-    listBookings:   "/api/admin/bookings",
-    updateBooking:  "/api/admin/bookings/:id",
-    stats:          "/api/admin/stats"
+    availableSlots: "/prod/api/availability",
+    submitBooking:  "/prod/api/bookings",
+    submitContact:  "/prod/api/contact",
+    adminLogin:     "/prod/api/admin/login",
+    listBookings:   "/prod/api/admin/bookings",
+    getBooking:     "/prod/api/admin/bookings/:id",
+    updateBooking:  "/prod/api/admin/bookings/:id",
+    stats:          "/prod/api/admin/stats"
+  },
+  url(endpoint, params) {
+    let path = endpoint;
+    if (params) Object.entries(params).forEach(([k, v]) => { path = path.replace(":" + k, encodeURIComponent(v)); });
+    return this.baseUrl + path;
+  },
+  authHeaders() {
+    const token = sessionStorage.getItem("wm_admin_token");
+    return token ? { "Authorization": "Bearer " + token } : {};
   }
 };

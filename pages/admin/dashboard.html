@@ -22,13 +22,13 @@
     <nav>
       <a href="dashboard.html" class="is-active">Dashboard</a>
       <a href="#bookings">Bookings</a>
-      <a href="#patients">Patients</a>
       <a href="#analytics">Analytics</a>
-      <a href="#settings">Settings</a>
     </nav>
-    <div style="margin-top: 3rem; padding: 1rem; border: 1px solid rgba(255, 253, 208, 0.2); border-radius: var(--radius-md); font-size: var(--fs-xs); color: rgba(255, 253, 208, 0.7);">
-      Logged in as <strong style="color: var(--color-cream); font-weight: 600;">Dr Moodley</strong><br/>
-      <a href="../../index.html" style="color: var(--color-tea);">← Back to site</a>
+    <div class="admin-user-card">
+      <span>Logged in as</span>
+      <strong class="admin-user-card__name">Dr Moodley</strong>
+      <a href="../../index.html">← Back to site</a>
+      <a href="#" id="wmLogout">Sign out</a>
     </div>
   </aside>
 
@@ -40,8 +40,7 @@
         <p class="muted" style="margin: 0.25rem 0 0;">Here's the state of the practice today.</p>
       </div>
       <div style="display:flex; gap: 0.5rem;">
-        <button class="btn-wm btn-wm--ghost btn-wm--sm">Export CSV</button>
-        <button class="btn-wm btn-wm--primary btn-wm--sm">+ New Booking</button>
+        <a href="../book-appointment.html" class="btn-wm btn-wm--primary btn-wm--sm">+ New Booking</a>
       </div>
     </div>
 
@@ -104,13 +103,8 @@
         </div>
       </div>
     </section>
-
-    <p class="muted" style="margin-top: 2.5rem; font-size: var(--fs-xs);">
-      Currently rendering with mock data. Live data will appear once the backend is deployed and pointed at <code>/api/admin/bookings</code>. See <code>/docs/BACKEND_API_CONTRACT.md</code>.
-    </p>
   </main>
 </div>
-
 <script src="../../js/config.js"></script>
 <script src="../../js/icons.js"></script>
 <script src="../../js/admin.js"></script>
