@@ -21,7 +21,7 @@
         { label: "Yoga · Breathwork",   href: url("pages/services/yoga-breathwork.html") }
       ]
     },
-    { label: "Art of Living", href: url("pages/art-of-living.html") },
+    // { label: "Art of Living", href: url("pages/art-of-living.html") },
     { label: "Contact", href: url("pages/contact.html") }
   ];
 
@@ -143,7 +143,7 @@
             <div class="col-lg-2 col-md-6 col-6">
               <h5>Practice</h5>
               <a href="${url('pages/about.html')}">About Dr Moodley</a>
-              <a href="${url('pages/art-of-living.html')}">Art of Living</a>
+              <!-- <a href="${url('pages/art-of-living.html')}">Art of Living</a> -->
               <a href="${url('pages/reviews.html')}">Reviews</a>
               <a href="${url('pages/contact.html')}">Contact</a>
               <a href="${url('pages/book-appointment.html')}">Book Appointment</a>

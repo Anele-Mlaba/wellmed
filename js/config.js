@@ -7,7 +7,7 @@ WM.brand = {
   doctor: "Dr Moodley",
   phone: "+27 74 915 2513",
   whatsapp: "+27 74 915 2513",
-  email: "k.moodley@wellmed.org.za",
+  email: "drmoodley17@gmail.com",
   address: "4 Lagoon Dr, Umhlanga, uMhlanga, 4320, South Africa",
   hours: [
     { day: "Mon – Fri", hours: "08:00 – 17:00" },
