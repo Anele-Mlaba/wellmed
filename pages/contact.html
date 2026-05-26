@@ -30,25 +30,29 @@
   <div class="container-wm">
     <div class="row g-3">
       <div class="col-md-6 col-lg-3 reveal"><div class="card-wm h-100">
-        <div class="card-service__icon" id="cIc1"></div>
+        <div class="card-service__icon" id="cIc1"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s7-7.58 7-13a7 7 0 0 0-14 0c0 5.42 7 13 7 13z"/><circle cx="12" cy="9" r="2.5"/></svg></div>
         <h4 style="font-size: var(--fs-md); font-family: var(--font-sans); margin: 1rem 0 0.4rem;">Visit Us</h4>
-        <p style="margin: 0; font-size: var(--fs-sm);" id="cAddr"></p>
+        <p style="margin: 0; font-size: var(--fs-sm);" id="cAddr">4 Lagoon Dr, Umhlanga, uMhlanga, 4320, South Africa</p>
       </div></div>
       <div class="col-md-6 col-lg-3 reveal"><div class="card-wm h-100">
-        <div class="card-service__icon" id="cIc2"></div>
+        <div class="card-service__icon" id="cIc2"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg></div>
         <h4 style="font-size: var(--fs-md); font-family: var(--font-sans); margin: 1rem 0 0.4rem;">Call or WhatsApp</h4>
-        <p style="margin: 0; font-size: var(--fs-sm);"><a href="tel:" id="cTelLink"></a> · call</p>
-        <p style="margin: 0; font-size: var(--fs-sm);"><a href="#" id="cWaLink"></a> · WhatsApp</p>
+        <p style="margin: 0; font-size: var(--fs-sm);"><a href="tel:+27749152513" id="cTelLink">+27 74 915 2513</a> · call</p>
+        <p style="margin: 0; font-size: var(--fs-sm);"><a href="https://wa.me/27749152513" id="cWaLink">+27 74 915 2513</a> · WhatsApp</p>
       </div></div>
       <div class="col-md-6 col-lg-3 reveal"><div class="card-wm h-100">
-        <div class="card-service__icon" id="cIc3"></div>
+        <div class="card-service__icon" id="cIc3"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 7l10 7 10-7"/></svg></div>
         <h4 style="font-size: var(--fs-md); font-family: var(--font-sans); margin: 1rem 0 0.4rem;">Email</h4>
-        <p style="margin: 0; font-size: var(--fs-sm);"><a href="" id="cEmailLink"></a></p>
+        <p style="margin: 0; font-size: var(--fs-sm);"><a href="mailto:drmoodley17@gmail.com" id="cEmailLink">drmoodley17@gmail.com</a></p>
       </div></div>
       <div class="col-md-6 col-lg-3 reveal"><div class="card-wm h-100">
-        <div class="card-service__icon" id="cIc4"></div>
+        <div class="card-service__icon" id="cIc4"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div>
         <h4 style="font-size: var(--fs-md); font-family: var(--font-sans); margin: 1rem 0 0.4rem;">Hours</h4>
-        <ul id="cHours" style="list-style: none; padding: 0; margin: 0; font-size: var(--fs-sm);"></ul>
+        <ul id="cHours" style="list-style: none; padding: 0; margin: 0; font-size: var(--fs-sm);">
+          <li style="display:flex; flex-wrap:wrap; justify-content:space-between; gap:0.25rem 0.75rem; padding: 0.4rem 0; border-bottom: 1px solid var(--color-line-soft);"><span>Mon – Fri</span><span class="muted">08:00 – 17:00</span></li>
+          <li style="display:flex; flex-wrap:wrap; justify-content:space-between; gap:0.25rem 0.75rem; padding: 0.4rem 0; border-bottom: 1px solid var(--color-line-soft);"><span>Saturday</span><span class="muted">09:00 – 14:00</span></li>
+          <li style="display:flex; flex-wrap:wrap; justify-content:space-between; gap:0.25rem 0.75rem; padding: 0.4rem 0; border-bottom: 1px solid var(--color-line-soft);"><span>Sunday</span><span class="muted">09:00 – 12:30</span></li>
+        </ul>
       </div></div>
 
       <!--div class="col-lg-7">
@@ -92,26 +96,34 @@
 <script src="../js/layout.js"></script>
 <script>
   document.addEventListener("DOMContentLoaded", () => {
-    document.getElementById("cIc1").innerHTML = WM.icons.pin;
-    document.getElementById("cIc2").innerHTML = WM.icons.phone;
-    document.getElementById("cIc3").innerHTML = WM.icons.mail;
-    document.getElementById("cIc4").innerHTML = WM.icons.clock;
-
-    document.getElementById("cAddr").textContent = WM.brand.address;
-    const tel = document.getElementById("cTelLink");
-    tel.href = "tel:" + WM.brand.phone.replace(/\s/g, "");
-    tel.textContent = WM.brand.phone;
-    const wa = document.getElementById("cWaLink");
-    wa.href = "https://wa.me/" + WM.brand.whatsapp.replace(/[^\d]/g, "");
-    wa.textContent = WM.brand.whatsapp;
-    const em = document.getElementById("cEmailLink");
-    em.href = "mailto:" + WM.brand.email;
-    em.textContent = WM.brand.email;
-
-    const hrs = document.getElementById("cHours");
-    hrs.innerHTML = WM.brand.hours.map(h =>
-      `<li style="display:flex; flex-wrap:wrap; justify-content:space-between; gap:0.25rem 0.75rem; padding: 0.4rem 0; border-bottom: 1px solid var(--color-line-soft);"><span>${h.day}</span><span class="muted">${h.hours}</span></li>`
-    ).join("");
+    // Cards are pre-populated in the HTML so they render even if config.js / icons.js
+    // fail to load. Below is enhancement-only: if WM is available, sync values from
+    // config (so changes there propagate) and swap to the official icon set.
+    const brand = (window.WM && WM.brand) || null;
+    const icons = (window.WM && WM.icons) || null;
+    if (icons) {
+      const setIcon = (id, svg) => { const el = document.getElementById(id); if (el && svg) el.innerHTML = svg; };
+      setIcon("cIc1", icons.pin);
+      setIcon("cIc2", icons.phone);
+      setIcon("cIc3", icons.mail);
+      setIcon("cIc4", icons.clock);
+    }
+    if (brand) {
+      const addr = document.getElementById("cAddr");
+      if (addr && brand.address) addr.textContent = brand.address;
+      const tel = document.getElementById("cTelLink");
+      if (tel && brand.phone) { tel.href = "tel:" + brand.phone.replace(/\s/g, ""); tel.textContent = brand.phone; }
+      const wa = document.getElementById("cWaLink");
+      if (wa && brand.whatsapp) { wa.href = "https://wa.me/" + brand.whatsapp.replace(/[^\d]/g, ""); wa.textContent = brand.whatsapp; }
+      const em = document.getElementById("cEmailLink");
+      if (em && brand.email) { em.href = "mailto:" + brand.email; em.textContent = brand.email; }
+      const hrs = document.getElementById("cHours");
+      if (hrs && Array.isArray(brand.hours) && brand.hours.length) {
+        hrs.innerHTML = brand.hours.map(h =>
+          `<li style="display:flex; flex-wrap:wrap; justify-content:space-between; gap:0.25rem 0.75rem; padding: 0.4rem 0; border-bottom: 1px solid var(--color-line-soft);"><span>${h.day}</span><span class="muted">${h.hours}</span></li>`
+        ).join("");
+      }
+    }
 
     const form = document.getElementById("contactForm");
     if (!form) return;
