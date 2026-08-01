@@ -34,12 +34,12 @@ Goal: site looks production-ready with real content.
 
 Goal: real bookings flow into a real database and real Google Calendar.
 
-- [ ] Implement endpoints per `BACKEND_API_CONTRACT.md`:
-  - `GET /availability`
-  - `POST /bookings`
-  - `POST /contact`
-- [ ] Postgres schema per `DATABASE_SCHEMA.md`, with field-level encryption.
-- [ ] Google Calendar service-account integration per `BOOKING_ARCHITECTURE.md`.
+- [ ] Implement endpoints per `BACKEND_BUILD_PROMPT.md`:
+  - `GET /api/availability`
+  - `POST /api/bookings`
+  - `POST /api/contact`
+- [ ] DynamoDB single-table schema per `BACKEND_BUILD_PROMPT.md`, with field-level encryption.
+- [ ] Google Calendar service-account integration per `BACKEND_BUILD_PROMPT.md`.
 - [ ] Transactional emails (confirmation + reminder) via Postmark/SES.
 - [ ] CloudFormation / Terraform for one-shot provisioning.
 - [ ] Staging environment + smoke tests.

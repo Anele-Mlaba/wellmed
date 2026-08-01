@@ -26,11 +26,10 @@ WM.services = [
   { slug: "iv-therapy",       title: "IV Therapy",          tagline: "Replenish & restore",       icon: "drop" },
   { slug: "ozone-therapy",    title: "Ozone Therapy",       tagline: "Cellular wellness",         icon: "spark" },
   { slug: "red-light-therapy",title: "Red Light Therapy",   tagline: "Recover & glow",            icon: "sun" },
-  { slug: "weight-loss",      title: "Medical Weight Loss", tagline: "Sustainable transformation",icon: "scale" },
-  { slug: "yoga-breathwork", title: "Yoga", tagline: "Move, breathe, restore", icon: "leaf" }
+  { slug: "weight-loss",      title: "Medical Weight Loss", tagline: "Sustainable transformation",icon: "scale" }
 ];
 
-/* Backend API — deployed on AWS (eu-west-1). Contract: /docs/BACKEND_API_CONTRACT.md.
+/* Backend API — deployed on AWS (eu-west-1). Contract: /docs/BACKEND_BUILD_PROMPT.md.
    The booking form still falls back to local-queue if the network call fails,
    and availability falls back to synthesised slots per the contract. */
 WM.api = {

@@ -1,5 +1,5 @@
 /* WellMed — Admin dashboard
-   Wired to /api/admin/* (see BACKEND_API_CONTRACT.md).
+   Wired to /api/admin/* (see docs/BACKEND_BUILD_PROMPT.md).
    Shows a login overlay when no JWT is present or the token is rejected.
 */
 (function () {

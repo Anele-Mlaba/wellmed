@@ -12,7 +12,6 @@ wellmed/
 │   ├── icons/                       # Favicon variants (TBD)
 │   └── images/
 │       ├── logo.svg                 # Brand logo
-│       ├── placeholder-doctor.svg   # Stand-in until real photos arrive
 │       ├── hero-1.svg, hero-2.svg, hero-3.svg
 │       └── gallery-pattern.svg
 ├── css/
@@ -42,9 +41,7 @@ wellmed/
 │   └── admin/
 │       └── dashboard.html
 └── docs/
-    ├── BACKEND_API_CONTRACT.md
-    ├── DATABASE_SCHEMA.md
-    ├── BOOKING_ARCHITECTURE.md
+    ├── BACKEND_BUILD_PROMPT.md
     ├── DEPLOYMENT.md
     ├── SECURITY.md
     ├── SEO.md
