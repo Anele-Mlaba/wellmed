@@ -142,7 +142,7 @@
             </div>
             <div class="col-lg-2 col-md-6 col-6">
               <h5>Practice</h5>
-              <a href="${url('pages/about.html')}">About Dr Moodley</a>
+              <a href="${url('pages/about.html')}">About WellMed</a>
               <!-- <a href="${url('pages/art-of-living.html')}">Art of Living</a> -->
               <a href="${url('pages/reviews.html')}">Reviews</a>
               <a href="${url('pages/contact.html')}">Contact</a>
