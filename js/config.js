@@ -54,3 +54,10 @@ WM.api = {
     return token ? { "Authorization": "Bearer " + token } : {};
   }
 };
+
+/* Shared notification microservice (cavetools-notification-service). Sends the
+   booking confirmation email + calendar invite via Zoho Mail — this is the
+   sole confirmation email for wellmed bookings. */
+WM.notificationApi = {
+  url: "https://a4usuvkkb6.execute-api.eu-west-1.amazonaws.com/Prod/notifications/send"
+};
