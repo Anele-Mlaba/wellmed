@@ -170,6 +170,43 @@
     return ok;
   }
 
+  /* -------- Booking confirmation email -------- */
+  // The availability API doesn't expose per-service appointment length, so we
+  // assume the standard slot length used to generate booking slots.
+  const APPOINTMENT_DURATION_MINUTES = 30;
+
+  async function sendBookingConfirmationEmail(serviceTitle, startDate) {
+    const endDate = new Date(startDate.getTime() + APPOINTMENT_DURATION_MINUTES * 60000);
+    try {
+      const r = await fetch(WM.notificationApi.url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          appName: "wellmed",
+          notificationType: "booking_confirmation",
+          recipientType: "customer",
+          data: {
+            email: state.personal.email,
+            name: `${state.personal.firstName} ${state.personal.lastName}`.trim(),
+            companyName: WM.brand.name,
+            message: `Hi ${state.personal.firstName}, your ${serviceTitle} appointment with ${WM.brand.doctor} is confirmed. We look forward to seeing you at ${WM.brand.address}.`,
+            event: {
+              title: `${serviceTitle} — ${WM.brand.name}`,
+              location: WM.brand.address,
+              startTime: startDate.toISOString(),
+              endTime: endDate.toISOString()
+            }
+          }
+        })
+      });
+      if (!r.ok) throw new Error("notification_failed " + r.status);
+    } catch (e) {
+      // Best-effort: the booking itself already succeeded, so a failed
+      // confirmation email shouldn't block the user or look like a failed booking.
+      console.error("Failed to send booking confirmation email", e);
+    }
+  }
+
   /* -------- Submit -------- */
   async function submitBooking() {
     const payload = {
@@ -203,6 +240,9 @@
     const dt = new Date(state.slot);
     const fmtDate = dt.toLocaleDateString("en-ZA", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
     const fmtTime = dt.toLocaleTimeString("en-ZA", { hour: "2-digit", minute: "2-digit", hour12: false });
+
+    await sendBookingConfirmationEmail(svc, dt);
+
     document.getElementById("confSummary").innerHTML = `
       <div style="font-size: var(--fs-xs); letter-spacing: 0.18em; text-transform: uppercase; color: var(--color-olive); margin-bottom: 0.5rem;">Your appointment</div>
       <h3 style="margin: 0 0 0.5rem;">${svc}</h3>
