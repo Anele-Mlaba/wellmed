@@ -175,8 +175,7 @@
   // assume the standard slot length used to generate booking slots.
   const APPOINTMENT_DURATION_MINUTES = 30;
 
-  async function sendBookingConfirmationEmail(serviceTitle, startDate) {
-    const endDate = new Date(startDate.getTime() + APPOINTMENT_DURATION_MINUTES * 60000);
+  async function sendNotificationEmail(email, name, message, event) {
     try {
       const r = await fetch(WM.notificationApi.url, {
         method: "POST",
@@ -185,26 +184,40 @@
           appName: "wellmed",
           notificationType: "booking_confirmation",
           recipientType: "customer",
-          data: {
-            email: state.personal.email,
-            name: `${state.personal.firstName} ${state.personal.lastName}`.trim(),
-            companyName: WM.brand.name,
-            message: `Hi ${state.personal.firstName}, your ${serviceTitle} appointment with ${WM.brand.doctor} is confirmed. We look forward to seeing you at ${WM.brand.address}.`,
-            event: {
-              title: `${serviceTitle} — ${WM.brand.name}`,
-              location: WM.brand.address,
-              startTime: startDate.toISOString(),
-              endTime: endDate.toISOString()
-            }
-          }
+          data: { email, name, companyName: WM.brand.name, message, event }
         })
       });
       if (!r.ok) throw new Error("notification_failed " + r.status);
     } catch (e) {
       // Best-effort: the booking itself already succeeded, so a failed
       // confirmation email shouldn't block the user or look like a failed booking.
-      console.error("Failed to send booking confirmation email", e);
+      console.error("Failed to send booking confirmation email to " + email, e);
     }
+  }
+
+  async function sendBookingConfirmationEmail(serviceTitle, startDate) {
+    const endDate = new Date(startDate.getTime() + APPOINTMENT_DURATION_MINUTES * 60000);
+    const patientName = `${state.personal.firstName} ${state.personal.lastName}`.trim();
+    const event = {
+      title: `${serviceTitle} — ${WM.brand.name}`,
+      location: WM.brand.address,
+      startTime: startDate.toISOString(),
+      endTime: endDate.toISOString()
+    };
+    await Promise.all([
+      sendNotificationEmail(
+        state.personal.email,
+        patientName,
+        `Hi ${state.personal.firstName}, your ${serviceTitle} appointment with ${WM.brand.doctor} is confirmed. We look forward to seeing you at ${WM.brand.address}.`,
+        event
+      ),
+      sendNotificationEmail(
+        WM.brand.email,
+        WM.brand.doctor,
+        `New booking: ${patientName} has booked a ${serviceTitle} appointment on ${startDate.toLocaleString("en-ZA")}.`,
+        event
+      )
+    ]);
   }
 
   /* -------- Submit -------- */

@@ -17,7 +17,8 @@ WM.brand = {
   social: {
     instagram: "https://www.instagram.com/dr_k_moodley/",
     facebook: "#",
-    google: "https://maps.app.goo.gl/abfBM6jzEtEuQZQy5"
+    google: "https://maps.app.goo.gl/abfBM6jzEtEuQZQy5",
+    googleProfile: "https://share.google/x9kKYi7qBIPuJtIW0"
   }
 };
 

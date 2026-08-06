@@ -137,7 +137,8 @@
               </p>
               <div style="display:flex; gap: 0.75rem; margin-top: 1.25rem;">
                 <a href="${WM.brand.social.instagram}" aria-label="Instagram" style="opacity: 0.8;">Instagram</a>
-                <a href="${WM.brand.social.google}" aria-label="Google" style="opacity: 0.8;">Google</a>
+                <a href="${WM.brand.social.google}" aria-label="Google Maps" style="opacity: 0.8;">Google Maps</a>
+                <a href="${WM.brand.social.googleProfile}" aria-label="Google Profile" style="opacity: 0.8;">Google Profile</a>
               </div>
             </div>
             <div class="col-lg-2 col-md-6 col-6">
