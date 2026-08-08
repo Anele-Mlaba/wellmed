@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Create Your Profile — WellMed Wellness</title>
+<meta name="description" content="Create your WellMed profile once — then every booking takes seconds." />
+<meta name="robots" content="noindex,follow" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" /><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@300;400;500;600;700&family=Caveat:wght@500&display=swap" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+<link rel="stylesheet" href="../css/tokens.css" />
+<link rel="stylesheet" href="../css/base.css" />
+<link rel="stylesheet" href="../css/components.css" />
+<link rel="icon" type="image/svg+xml" href="../assets/images/logo.svg" />
+</head>
+<body>
+
+<div id="site-header"></div>
+
+<section class="section" style="padding-top: var(--space-6);">
+  <div class="container-wm" style="max-width: 640px;">
+    <div class="card-wm" style="padding: var(--space-7);">
+      <h2 style="margin-bottom: 0.5rem;">Create your <em class="serif">profile</em></h2>
+      <p class="muted" style="margin-bottom: 2rem;">These are the same details we ask for when you book — save them once and never fill a long form again.</p>
+
+      <form class="form-wm" id="registerForm" novalidate>
+        <div class="row g-3">
+          <div class="col-md-6"><div class="field"><label for="rFirst">First name</label><input id="rFirst" type="text" autocomplete="given-name" required /><div class="error">First name required.</div></div></div>
+          <div class="col-md-6"><div class="field"><label for="rLast">Last name</label><input id="rLast" type="text" autocomplete="family-name" required /><div class="error">Last name required.</div></div></div>
+          <div class="col-md-6"><div class="field"><label for="rDob">Date of birth</label><input id="rDob" type="date" autocomplete="bday" required /><div class="error">Date of birth required.</div></div></div>
+          <div class="col-md-6"><div class="field"><label for="rPhone">Mobile number</label><input id="rPhone" type="tel" autocomplete="tel" required /><div class="error">Mobile number required.</div></div></div>
+          <div class="col-md-12"><div class="field"><label for="rEmail">Email</label><input id="rEmail" type="email" autocomplete="email" required /><div class="error">A valid email is required.</div></div></div>
+
+          <div class="col-12" style="margin-top: 0.5rem;">
+            <p style="font-size: var(--fs-xs); letter-spacing: 0.18em; text-transform: uppercase; color: var(--color-olive); margin-bottom: 0.5rem;">Medical Aid <span class="muted" style="text-transform: none; letter-spacing: 0.04em;">(optional — leave blank if private)</span></p>
+          </div>
+          <div class="col-md-6"><div class="field"><label for="rMaProvider">Medical aid provider</label><input id="rMaProvider" type="text" placeholder="e.g. Discovery, Bonitas" /></div></div>
+          <div class="col-md-6"><div class="field"><label for="rMaNumber">Membership number</label><input id="rMaNumber" type="text" /></div></div>
+          <div class="col-md-6"><div class="field"><label for="rMaMember">Main member name</label><input id="rMaMember" type="text" /></div></div>
+          <div class="col-md-6"><div class="field"><label for="rMaDependent">Dependent code</label><input id="rMaDependent" type="text" placeholder="00 if main member" /></div></div>
+
+          <div class="col-12" style="margin-top: 0.5rem;">
+            <p style="font-size: var(--fs-xs); letter-spacing: 0.18em; text-transform: uppercase; color: var(--color-olive); margin-bottom: 0.5rem;">Your Password</p>
+          </div>
+          <div class="col-md-6"><div class="field"><label for="rPassword">Password</label><input id="rPassword" type="password" autocomplete="new-password" minlength="8" required /><div class="help">At least 8 characters.</div><div class="error">Minimum 8 characters.</div></div></div>
+          <div class="col-md-6"><div class="field"><label for="rPassword2">Confirm password</label><input id="rPassword2" type="password" autocomplete="new-password" minlength="8" required /><div class="error">Passwords must match.</div></div></div>
+        </div>
+
+        <label class="checkbox-wm" style="margin: 1.25rem 0;">
+          <input type="checkbox" id="rConsent" required />
+          <span>I consent to WellMed storing these details to manage my bookings, in accordance with POPIA. I can ask for them to be removed at any time.</span>
+        </label>
+
+        <div id="registerError" style="color: var(--color-danger); margin-bottom: 1rem;" hidden></div>
+        <button type="submit" class="btn-wm btn-wm--primary btn-wm--lg" id="registerBtn" style="width: 100%;">Create Profile</button>
+      </form>
+
+      <p class="muted" style="margin: 1.5rem 0 0; font-size: var(--fs-sm); text-align: center;">
+        Already have a profile? <a href="login.html">Sign in</a>
+      </p>
+    </div>
+  </div>
+</section>
+
+<div id="site-footer"></div>
+
+<script src="../js/config.js"></script>
+<script src="../js/icons.js"></script>
+<script src="../js/auth.js"></script>
+<script src="../js/layout.js"></script>
+<script>
+(function () {
+  const params = new URLSearchParams(location.search);
+  const returnTo = params.get("return") || "account.html";
+
+  if (WMAuth.isAuthenticated()) { location.replace(returnTo); return; }
+
+  const val = (id) => document.getElementById(id).value.trim();
+
+  document.getElementById("registerForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const errEl = document.getElementById("registerError");
+    errEl.hidden = true;
+
+    let ok = true;
+    ["rFirst","rLast","rDob","rPhone","rEmail","rPassword","rPassword2"].forEach(id => {
+      const el = document.getElementById(id);
+      const valid = el.checkValidity() && el.value.trim().length > 0;
+      el.closest(".field")?.classList.toggle("has-error", !valid);
+      if (!valid) ok = false;
+    });
+    if (val("rPassword") !== document.getElementById("rPassword2").value) {
+      document.getElementById("rPassword2").closest(".field")?.classList.add("has-error");
+      ok = false;
+    }
+    const consentEl = document.getElementById("rConsent");
+    consentEl.closest(".checkbox-wm")?.classList.toggle("has-error", !consentEl.checked);
+    if (!consentEl.checked) ok = false;
+    if (!ok) return;
+
+    const btn = document.getElementById("registerBtn");
+    btn.disabled = true;
+    btn.textContent = "Creating…";
+    try {
+      await WMAuth.register({
+        firstName: val("rFirst"),
+        lastName: val("rLast"),
+        dob: document.getElementById("rDob").value,
+        phone: val("rPhone"),
+        email: val("rEmail"),
+        password: document.getElementById("rPassword").value,
+        medicalAid: {
+          provider: val("rMaProvider") || null,
+          memberNumber: val("rMaNumber") || null,
+          mainMember: val("rMaMember") || null,
+          dependentCode: val("rMaDependent") || null
+        }
+      });
+      location.href = returnTo;
+    } catch (err) {
+      btn.disabled = false;
+      btn.textContent = "Create Profile";
+      errEl.textContent = err.message;
+      errEl.hidden = false;
+    }
+  });
+})();
+</script>
+</body>
+</html>

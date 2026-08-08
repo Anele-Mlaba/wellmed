@@ -4,7 +4,24 @@
 */
 (function () {
   let bookings = [];
+  let pricingCatalog = null;   // { categories, updatedAt } from GET /api/pricing
+  let pricingLoaded = false;   // fetched at least once (Pricing tab lazy-loads)
   const $ = (s) => document.querySelector(s);
+
+  // Escape user-supplied strings before dropping them into HTML/attributes.
+  const esc = (v) => String(v == null ? "" : v)
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+
+  // R1 234 — integer rand with thin-space thousands.
+  const fmtRand = (n) => (typeof n === "number" && isFinite(n))
+    ? "R" + Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ")
+    : "—";
+
+  const patientNameOf = (b) => {
+    if (typeof b.patient === "string" && b.patient) return b.patient;
+    const p = (b.patient && typeof b.patient === "object") ? b.patient : (b.personal || {});
+    return [p.firstName, p.lastName].filter(Boolean).join(" ") || "—";
+  };
 
   async function load() {
     if (!sessionStorage.getItem("wm_admin_token")) {
@@ -76,6 +93,21 @@
     renderTable();
     renderServiceMix();
     renderDemographics();
+    renderIv();
+  }
+
+  /* ---------- View tabs (Appointments / IV Therapy / Pricing) ---------- */
+
+  function initTabs() {
+    const setView = (view) => {
+      document.querySelectorAll(".admin-view").forEach(v => { v.hidden = v.dataset.view !== view; });
+      document.querySelectorAll(".admin-tab[data-view]").forEach(t => t.classList.toggle("is-active", t.dataset.view === view));
+      document.querySelectorAll(".admin-sidebar nav a[data-view]").forEach(a => a.classList.toggle("is-active", a.dataset.view === view));
+      if (view === "pricing" && !pricingLoaded) loadPricing();
+    };
+    document.querySelectorAll(".admin-tab[data-view], .admin-sidebar nav a[data-view]").forEach(el => {
+      el.addEventListener("click", (e) => { e.preventDefault(); setView(el.dataset.view); });
+    });
   }
 
   function renderKpis() {
@@ -137,6 +169,87 @@
         if (b) rescheduleBooking(b);
       }
     }));
+  }
+
+  /* ---------- IV Therapy view (drips run concurrently in multiple chairs) ---------- */
+
+  function renderIv() {
+    if (!$("#ivBody")) return;
+    renderIvKpis();
+    renderIvTable();
+  }
+
+  function renderIvKpis() {
+    const iv = bookings.filter(b => b.service === "iv-therapy");
+    const now = new Date();
+    const dayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+    const dayEnd = dayStart + 24 * 60 * 60 * 1000;
+    const slotMs = (b) => new Date(b.slot || b.slotStart).getTime();
+
+    const today = iv.filter(b => {
+      const t = slotMs(b);
+      return t >= dayStart && t < dayEnd && b.status !== "cancelled";
+    }).length;
+    const upcoming = iv.filter(b => slotMs(b) > now.getTime() && ["pending", "confirmed"].includes(b.status)).length;
+    const completed = iv.filter(b => b.status === "completed");
+    const revenue = completed.reduce((sum, b) =>
+      sum + ((b.pricing && typeof b.pricing.total === "number") ? b.pricing.total : 0), 0);
+
+    $("#kpiIvToday").textContent = today;
+    $("#kpiIvUpcoming").textContent = upcoming;
+    $("#kpiIvCompleted").textContent = completed.length;
+    $("#kpiIvRevenue").textContent = fmtRand(revenue);
+  }
+
+  function renderIvTable() {
+    const range = $("#ivRange").value;
+    const now = new Date();
+    const dayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+    const dayEnd = dayStart + 24 * 60 * 60 * 1000;
+    const weekEnd = dayStart + 7 * 24 * 60 * 60 * 1000;
+    const slotMs = (b) => new Date(b.slot || b.slotStart).getTime();
+
+    const rows = bookings
+      .filter(b => b.service === "iv-therapy")
+      .filter(b => {
+        const t = slotMs(b);
+        if (range === "today") return t >= dayStart && t < dayEnd;
+        if (range === "week") return t >= dayStart && t < weekEnd;
+        if (range === "upcoming") return t > now.getTime();
+        return true;
+      })
+      .sort((a, b) => slotMs(a) - slotMs(b));
+
+    const fmt = (iso) => {
+      if (!iso) return "—";
+      const d = new Date(iso);
+      return d.toLocaleDateString("en-ZA", { day: "2-digit", month: "short" }) + " · " + d.toLocaleTimeString("en-ZA", { hour: "2-digit", minute: "2-digit", hour12: false });
+    };
+
+    const tbody = $("#ivBody");
+    if (!rows.length) {
+      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color: var(--color-muted); padding: 2rem;">No IV therapy bookings in this range.</td></tr>`;
+      return;
+    }
+    tbody.innerHTML = rows.map(b => {
+      const pr = (b.pricing && typeof b.pricing === "object") ? b.pricing : null;
+      const extras = (pr && Array.isArray(pr.extras) && pr.extras.length)
+        ? pr.extras.map(x => esc(x.name)).join(", ") : "—";
+      const id = b.id || b.shortId;
+      return `
+      <tr data-id="${esc(id)}" style="cursor:pointer;">
+        <td><span class="muted" style="font-size: var(--fs-xs);">${esc(b.shortId || id)}</span></td>
+        <td><strong>${esc(patientNameOf(b))}</strong></td>
+        <td>${pr && pr.itemName ? esc(pr.itemName) : "—"}</td>
+        <td>${extras}</td>
+        <td>${pr && typeof pr.total === "number" ? fmtRand(pr.total) : "—"}</td>
+        <td>${fmt(b.slot || b.slotStart)}</td>
+        <td><span class="status-pill status-pill--${esc(b.status)}">${esc(b.status)}</span></td>
+      </tr>`;
+    }).join("");
+
+    tbody.querySelectorAll("tr[data-id]").forEach(tr =>
+      tr.addEventListener("click", () => openBookingModal(tr.dataset.id)));
   }
 
   async function openBookingModal(id) {
@@ -206,6 +319,26 @@
     const row = (label, value) => value
       ? `<div class="wm-modal__row"><dt>${label}</dt><dd>${value}</dd></div>` : "";
 
+    // Selected drip / option + total, when the booking carries a pricing snapshot.
+    const pr = asObj(booking.pricing);
+    const pricingBlock = (pr.itemName || pr.total != null) ? `
+      <div class="price-option__extras" style="margin-top: 1.25rem;">
+        <p class="muted" style="font-size: var(--fs-xs); letter-spacing: 0.14em; text-transform: uppercase; margin: 0 0 0.5rem;">${booking.service === "iv-therapy" ? "Selected drip" : "Selected option"}</p>
+        <div class="d-flex justify-content-between" style="gap: 1rem;">
+          <span>${esc(pr.itemName || "—")}</span>
+          <strong>${typeof pr.basePrice === "number" ? fmtRand(pr.basePrice) : ""}</strong>
+        </div>
+        ${(Array.isArray(pr.extras) ? pr.extras : []).map(x => `
+          <div class="d-flex justify-content-between" style="gap: 1rem; font-size: var(--fs-sm); color: var(--color-ink-soft);">
+            <span>+ ${esc(x.name)}</span>
+            <span>${typeof x.price === "number" ? fmtRand(x.price) : ""}</span>
+          </div>`).join("")}
+        <div class="d-flex justify-content-between" style="gap: 1rem; border-top: 1px solid var(--color-line-soft); margin-top: 0.5rem; padding-top: 0.5rem;">
+          <span>Total</span>
+          <strong>${typeof pr.total === "number" ? fmtRand(pr.total) : "—"}</strong>
+        </div>
+      </div>` : "";
+
     const status = booking.status || "pending";
     const isTerminal = ["completed", "noshow", "cancelled"].includes(status);
     const actions = isTerminal ? "" : `
@@ -232,6 +365,7 @@
           ${row("Source", booking.source)}
           ${row("Email", p.email)}
           ${row("Phone", p.phone)}
+          ${row("Date of birth", p.dob)}
           ${row("SA ID / Passport", p.idOrPassport)}
           ${row("Emergency contact", ec.name ? `${ec.name} · ${ec.phone || "—"}` : null)}
           ${row("Medical aid", medicalAidLabel)}
@@ -241,6 +375,7 @@
           ${row("Current meds", m.currentMeds)}
           ${row("Notes", m.notes)}
         </dl>
+        ${pricingBlock}
         ${actions}
       </div>`;
 
@@ -382,6 +517,173 @@
     }
   }
 
+  /* ---------- Pricing editor (whole-catalog PUT to /api/admin/pricing) ---------- */
+
+  function setPricingStatus(msg, kind) {
+    const el = $("#pricingStatus");
+    if (!el) return;
+    el.textContent = msg || "";
+    el.style.color = kind === "error" ? "var(--color-warn)" : "var(--color-olive-deep)";
+  }
+
+  async function loadPricing() {
+    const box = $("#pricingEditor");
+    if (!box) return;
+    box.innerHTML = `<p class="muted" style="padding: 1rem 0;">Loading price catalog…</p>`;
+    setPricingStatus("");
+    try {
+      const r = await fetch(WM.api.url(WM.api.endpoints.pricing));
+      if (!r.ok) throw new Error("pricing " + r.status);
+      pricingCatalog = await r.json();
+      pricingLoaded = true;
+      renderPricingEditor();
+    } catch (e) {
+      box.innerHTML = `<p class="muted" style="padding: 1rem 0;">Couldn't load pricing: ${esc(e.message || e)}</p>`;
+    }
+  }
+
+  function renderPricingEditor() {
+    const box = $("#pricingEditor");
+    const cats = (pricingCatalog && pricingCatalog.categories) || [];
+    if (!cats.length) {
+      box.innerHTML = `<p class="muted" style="padding: 1rem 0;">No pricing categories found.</p>`;
+      return;
+    }
+
+    const inputCss = "width:100%; padding:0.35rem 0.5rem; border:1px solid var(--color-line-soft); border-radius: var(--radius-sm, 6px); font-size: var(--fs-sm); background: var(--color-white, #fff);";
+
+    const scheduleHtml = (cat) => {
+      if (!Array.isArray(cat.schedule) || !cat.schedule.length) return "";
+      return `
+        <div style="margin-bottom: 1rem;">
+          <p class="muted" style="font-size: var(--fs-xs); letter-spacing: 0.14em; text-transform: uppercase; margin: 0 0 0.5rem;">Class schedule</p>
+          ${cat.schedule.map((s, i) => `
+            <div class="d-flex gap-2" style="margin-bottom: 0.5rem;" data-sched="${i}">
+              <input type="text" data-field="day" value="${esc(s.day)}" placeholder="Day" aria-label="Schedule day" style="${inputCss} max-width: 220px;" />
+              <input type="text" data-field="time" value="${esc(s.time)}" placeholder="Time" aria-label="Schedule time" style="${inputCss} max-width: 220px;" />
+            </div>`).join("")}
+        </div>`;
+    };
+
+    const extraHtml = (x) => `
+      <div class="d-flex align-items-center gap-2" style="margin: 0.5rem 0 0 1.25rem;" data-extra="${esc(x.id)}">
+        <span class="muted" style="font-size: var(--fs-xs); flex-shrink: 0;">+ ${esc(x.id)}</span>
+        <input type="text" data-field="extraName" value="${esc(x.name)}" aria-label="Extra name" style="${inputCss}" />
+        <input type="number" data-field="extraPrice" value="${typeof x.price === "number" ? x.price : ""}" min="0" step="1" aria-label="Extra price in rand" />
+      </div>`;
+
+    const itemHtml = (item) => `
+      <div class="price-row" data-item="${esc(item.id)}">
+        <div class="price-row__info" style="flex: 1;">
+          <span class="muted" style="font-size: var(--fs-xs); display: block; margin-bottom: 0.35rem;">${esc(item.id)}</span>
+          <input type="text" data-field="name" value="${esc(item.name)}" aria-label="Item name" style="${inputCss} font-weight: 600; margin-bottom: 0.4rem;" />
+          <input type="text" data-field="description" value="${esc(item.description || "")}" placeholder="Description (optional)" aria-label="Item description" style="${inputCss} margin-bottom: 0.4rem;" />
+          <input type="text" data-field="priceNote" value="${esc(item.priceNote || "")}" placeholder="Price note — shown when price is empty, e.g. On request" aria-label="Price note" style="${inputCss}" />
+          ${(item.extras || []).map(extraHtml).join("")}
+        </div>
+        <div class="price-row__price">
+          <label class="muted" style="font-size: var(--fs-xs); font-weight: 400; display: block; margin-bottom: 0.25rem;">Price (R)</label>
+          <input type="number" data-field="price" value="${typeof item.price === "number" ? item.price : ""}" min="0" step="1" placeholder="—" aria-label="Item price in rand" />
+        </div>
+      </div>`;
+
+    $("#pricingEditor").innerHTML = cats.map(cat => `
+      <div class="kpi" style="padding: var(--space-6); margin-bottom: 1.5rem;" data-cat-card="${esc(cat.id)}">
+        <div class="d-flex justify-content-between align-items-center" style="margin-bottom: 1rem;">
+          <div class="kpi__label">${esc(cat.title)}</div>
+          <span class="muted" style="font-size: var(--fs-xs);">${esc(cat.id)}</span>
+        </div>
+        ${scheduleHtml(cat)}
+        <div class="price-list">
+          ${(cat.items || []).map(itemHtml).join("")}
+        </div>
+      </div>`).join("");
+  }
+
+  // Read the inputs back into the exact catalog shape the PUT expects.
+  function collectPricing() {
+    const root = $("#pricingEditor");
+    const strOrNull = (v) => { const t = (v || "").trim(); return t || null; };
+    const intOrNull = (v) => {
+      const t = (v || "").trim();
+      if (t === "") return null;
+      const n = parseInt(t, 10);
+      return Number.isFinite(n) ? n : null;
+    };
+
+    return ((pricingCatalog && pricingCatalog.categories) || []).map(cat => {
+      const catEl = root.querySelector(`[data-cat-card="${cat.id}"]`);
+      const out = { id: cat.id, title: cat.title };
+      if (Array.isArray(cat.schedule)) {
+        out.schedule = cat.schedule.map((s, i) => {
+          const el = catEl.querySelector(`[data-sched="${i}"]`);
+          return {
+            day: (el.querySelector('input[data-field="day"]').value || "").trim(),
+            time: (el.querySelector('input[data-field="time"]').value || "").trim()
+          };
+        });
+      }
+      out.items = (cat.items || []).map(item => {
+        const rowEl = catEl.querySelector(`.price-row[data-item="${item.id}"]`);
+        const val = (f) => rowEl.querySelector(`input[data-field="${f}"]`).value;
+        return {
+          id: item.id,
+          name: val("name").trim() || item.name,
+          price: intOrNull(val("price")),
+          priceNote: strOrNull(val("priceNote")),
+          description: strOrNull(val("description")),
+          extras: (item.extras || []).map(x => {
+            const xEl = rowEl.querySelector(`[data-extra="${x.id}"]`);
+            const price = intOrNull(xEl.querySelector('input[data-field="extraPrice"]').value);
+            return {
+              id: x.id,
+              name: xEl.querySelector('input[data-field="extraName"]').value.trim() || x.name,
+              price: price == null ? x.price : price
+            };
+          })
+        };
+      });
+      return out;
+    });
+  }
+
+  async function savePricing() {
+    const btn = $("#pricingSave");
+    if (!pricingLoaded || !pricingCatalog) { setPricingStatus("Load the catalog first.", "error"); return; }
+    const categories = collectPricing();
+    btn.disabled = true;
+    btn.textContent = "Saving…";
+    setPricingStatus("");
+    try {
+      const r = await fetch(WM.api.url(WM.api.endpoints.adminPricing), {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", ...WM.api.authHeaders() },
+        body: JSON.stringify({ categories })
+      });
+      if (r.status === 401 || r.status === 403) {
+        sessionStorage.removeItem("wm_admin_token");
+        showLogin();
+        return;
+      }
+      if (!r.ok) {
+        const err = await r.json().catch(() => ({}));
+        throw new Error(err.error || ("adminPricing " + r.status));
+      }
+      const data = await r.json();
+      pricingCatalog = { categories: data.categories || categories, updatedAt: data.updatedAt };
+      renderPricingEditor();
+      const when = data.updatedAt
+        ? new Date(data.updatedAt).toLocaleString("en-ZA", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit", hour12: false })
+        : "just now";
+      setPricingStatus("Prices saved · updated " + when, "success");
+    } catch (e) {
+      setPricingStatus("Couldn't save prices: " + (e.message || e), "error");
+    } finally {
+      btn.disabled = false;
+      btn.textContent = "Save prices";
+    }
+  }
+
   function renderServiceMix() {
     const counts = {};
     WM.services.forEach(s => counts[s.slug] = 0);
@@ -434,6 +736,14 @@
       $("#fStatus").value = ""; $("#fService").value = ""; $("#fDate").value = "";
       renderTable();
     });
+
+    initTabs();
+    const ivRange = $("#ivRange");
+    if (ivRange) ivRange.addEventListener("change", renderIvTable);
+    const pricingReload = $("#pricingReload");
+    if (pricingReload) pricingReload.addEventListener("click", loadPricing);
+    const pricingSave = $("#pricingSave");
+    if (pricingSave) pricingSave.addEventListener("click", savePricing);
 
     const logout = document.getElementById("wmLogout");
     if (logout) logout.addEventListener("click", (e) => {

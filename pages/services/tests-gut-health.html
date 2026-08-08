@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Tests &amp; Gut Health — WellMed Wellness | Umhlanga</title>
+<meta name="description" content="Gut biome testing, functional blood tests and tailor-made probiotics at WellMed Umhlanga — understand your health from the inside out, with Dr Moodley." />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" /><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@300;400;500;600;700&family=Caveat:wght@500&display=swap" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+<link rel="stylesheet" href="../../css/tokens.css" />
+<link rel="stylesheet" href="../../css/base.css" />
+<link rel="stylesheet" href="../../css/components.css" />
+<link rel="icon" type="image/svg+xml" href="../../assets/images/logo.svg" />
+</head>
+<body>
+
+<div id="site-header"></div>
+
+<section class="page-hero">
+  <div class="container-wm page-hero__inner">
+    <span class="eyebrow">Tests &amp; Gut Health</span>
+    <h1 class="text-balance">Understand your health<br/><em class="serif">from the inside out.</em></h1>
+    <p class="lead">So much of how you feel — energy, mood, skin, immunity, digestion — starts in the gut and shows up in the blood. Our tests turn guesswork into a clear, doctor-interpreted picture of what's actually going on.</p>
+    <div style="display:flex; gap: 0.75rem; margin-top: 2rem; flex-wrap: wrap;">
+      <a href="../book-appointment.html?service=gut-biome-test" class="btn-wm btn-wm--primary btn-wm--lg">Book a Test →</a>
+      <a href="#pricing" class="btn-wm btn-wm--ghost btn-wm--lg">See pricing</a>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="tests">
+  <div class="container-wm">
+    <div class="row g-5">
+      <div class="col-lg-5">
+        <span class="eyebrow reveal">What we test</span>
+        <h2 class="reveal text-balance">Data first.<br/>Then a plan.</h2>
+        <p class="reveal">Every test at WellMed is reviewed with you by Dr Moodley — not posted to you as a PDF and a shrug. Results become a plan: nutrition, targeted supplementation, and where it helps, tailor-made probiotics.</p>
+        <p class="reveal muted" style="font-size: var(--fs-xs);">Tailor-made probiotics are arranged in consultation, after your gut biome test.</p>
+      </div>
+      <div class="col-lg-7">
+        <div class="row g-4">
+          <div class="col-md-6 reveal">
+            <div class="card-wm h-100">
+              <div class="card-service__icon" id="ict1"></div>
+              <h4 style="margin-top:1rem;">Gut Biome Test</h4>
+              <p>A comprehensive microbiome analysis — mapping the bacteria that shape your digestion, immunity, weight and even mood, so we can rebalance what's off.</p>
+            </div>
+          </div>
+          <div class="col-md-6 reveal">
+            <div class="card-wm h-100">
+              <div class="card-service__icon" id="ict2"></div>
+              <h4 style="margin-top:1rem;">Functional Blood Tests</h4>
+              <p>In-depth blood analysis conducted in-practice — going beyond the standard panel to look at nutrients, hormones, inflammation and metabolic markers.</p>
+            </div>
+          </div>
+          <div class="col-md-6 reveal">
+            <div class="card-wm h-100">
+              <div class="card-service__icon" id="ict3"></div>
+              <h4 style="margin-top:1rem;">Tailor-made Probiotics</h4>
+              <p>Once your gut biome results are in, a probiotic blend is formulated specifically for your gut — not a shelf product. Price quoted after your gut biome test.</p>
+            </div>
+          </div>
+          <div class="col-md-6 reveal">
+            <div class="card-wm h-100">
+              <div class="card-service__icon" id="ict4"></div>
+              <h4 style="margin-top:1rem;">Doctor-led Review</h4>
+              <p>Every result is interpreted with Dr Moodley in an unhurried consult — what it means, what to do about it, and what to re-test later.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section section--cream" id="pricing">
+  <div class="container-wm">
+    <div class="text-center" style="max-width: 720px; margin: 0 auto var(--space-7);">
+      <span class="eyebrow reveal">Pricing</span>
+      <h2 class="reveal text-balance">Clear tests,<br/><em class="serif">clear prices.</em></h2>
+    </div>
+    <div id="pricingList"></div>
+    <p class="text-center muted reveal" style="margin-top: 2rem; font-size: var(--fs-xs); max-width: 60ch; margin-left: auto; margin-right: auto;">
+      Tailor-made probiotics are arranged in consultation — your price is quoted after the gut biome test.
+    </p>
+  </div>
+</section>
+
+<section class="section section--olive">
+  <div class="container-wm text-center">
+    <h2 class="reveal text-balance">Stop guessing.<br/><em class="serif">Start measuring.</em></h2>
+    <a href="../book-appointment.html?service=gut-biome-test" class="btn-wm btn-wm--accent btn-wm--lg reveal" style="margin-top: 2rem;">Book a Test →</a>
+  </div>
+</section>
+
+<div id="site-footer"></div>
+<div id="site-fab"></div>
+<script src="../../js/config.js"></script>
+<script src="../../js/icons.js"></script>
+<script src="../../js/auth.js"></script>
+<script src="../../js/layout.js"></script>
+<script src="../../js/pricing.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    document.getElementById("ict1").innerHTML = WM.icons.leaf;
+    document.getElementById("ict2").innerHTML = WM.icons.flask;
+    document.getElementById("ict3").innerHTML = WM.icons.heart;
+    document.getElementById("ict4").innerHTML = WM.icons.stethoscope;
+  });
+  WM.pricing.renderCategory(document.getElementById("pricingList"), "tests", {
+    bookHref: "../book-appointment.html?service=gut-biome-test",
+    bookLabel: "Book a test"
+  });
+</script>
+</body>
+</html>

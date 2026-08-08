@@ -20,9 +20,9 @@
   <aside class="admin-sidebar">
     <h2>WellMed</h2>
     <nav>
-      <a href="dashboard.html" class="is-active">Dashboard</a>
-      <a href="#bookings">Bookings</a>
-      <a href="#analytics">Analytics</a>
+      <a href="#" data-view="appointments" class="is-active">Appointments</a>
+      <a href="#" data-view="iv">IV Therapy</a>
+      <a href="#" data-view="pricing">Pricing</a>
     </nav>
     <div class="admin-user-card">
       <span>Logged in as</span>
@@ -41,8 +41,19 @@
       </div>
       <div style="display:flex; gap: 0.5rem;">
         <a href="../book-appointment.html" class="btn-wm btn-wm--primary btn-wm--sm">+ New Booking</a>
+        <a href="../book-iv-therapy.html" class="btn-wm btn-wm--ghost btn-wm--sm">+ IV Booking</a>
       </div>
     </div>
+
+    <!-- View tabs -->
+    <div class="admin-tabs">
+      <button type="button" class="admin-tab is-active" data-view="appointments">Appointments</button>
+      <button type="button" class="admin-tab" data-view="iv">IV Therapy</button>
+      <button type="button" class="admin-tab" data-view="pricing">Pricing</button>
+    </div>
+
+    <!-- ============================ Appointments view ============================ -->
+    <div class="admin-view" data-view="appointments">
 
     <!-- KPIs -->
     <div class="kpi-grid">
@@ -103,6 +114,67 @@
         </div>
       </div>
     </section>
+    </div><!-- /appointments view -->
+
+    <!-- ============================ IV Therapy view ============================ -->
+    <div class="admin-view" data-view="iv" hidden>
+      <div class="kpi-grid">
+        <div class="kpi"><div class="kpi__label">Today's Drips</div><div class="kpi__value" id="kpiIvToday">–</div><div class="kpi__delta">Booked for today</div></div>
+        <div class="kpi"><div class="kpi__label">Upcoming</div><div class="kpi__value" id="kpiIvUpcoming">–</div><div class="kpi__delta">Pending &amp; confirmed</div></div>
+        <div class="kpi"><div class="kpi__label">Completed</div><div class="kpi__value" id="kpiIvCompleted">–</div><div class="kpi__delta">All time</div></div>
+        <div class="kpi"><div class="kpi__label">Revenue (completed)</div><div class="kpi__value" id="kpiIvRevenue">–</div><div class="kpi__delta">From completed drips</div></div>
+      </div>
+
+      <section>
+        <div class="d-flex justify-content-between align-items-end" style="margin-bottom: 1.25rem; flex-wrap: wrap; gap: 1rem;">
+          <h2 style="margin: 0;">IV Therapy Bookings</h2>
+          <div class="form-wm" style="display:flex; gap: 0.75rem; align-items: end;">
+            <div class="field" style="margin-bottom:0;">
+              <label for="ivRange" style="margin-bottom:4px;">Show</label>
+              <select id="ivRange" style="min-width: 160px;">
+                <option value="today">Today</option>
+                <option value="week">Next 7 days</option>
+                <option value="upcoming" selected>All upcoming</option>
+                <option value="all">All</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div style="overflow-x: auto;">
+          <table class="table-wm">
+            <thead>
+              <tr>
+                <th>Ref</th>
+                <th>Patient</th>
+                <th>Drip</th>
+                <th>Extras</th>
+                <th>Total</th>
+                <th>When</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="ivBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </div><!-- /iv view -->
+
+    <!-- ============================ Pricing view ============================ -->
+    <div class="admin-view pricing-editor" data-view="pricing" hidden>
+      <div class="d-flex justify-content-between align-items-end" style="margin-bottom: 1.25rem; flex-wrap: wrap; gap: 1rem;">
+        <div>
+          <h2 style="margin: 0;">Price List</h2>
+          <p class="muted" style="margin: 0.25rem 0 0;">Changes go live on the website and booking flow the moment you save.</p>
+        </div>
+        <div style="display:flex; gap: 0.5rem; align-items: center;">
+          <span id="pricingStatus" style="font-size: var(--fs-sm);"></span>
+          <button type="button" id="pricingReload" class="btn-wm btn-wm--ghost btn-wm--sm">Reload</button>
+          <button type="button" id="pricingSave" class="btn-wm btn-wm--primary btn-wm--sm">Save prices</button>
+        </div>
+      </div>
+      <div id="pricingEditor"></div>
+    </div><!-- /pricing view -->
   </main>
 </div>
 <script src="../../js/config.js"></script>
