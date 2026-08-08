@@ -1203,6 +1203,128 @@
   .admin-main { padding: var(--space-5) var(--space-4); }
 }
 
+/* ---------- Price lists (service pages) ---------- */
+.price-list {
+  border: 1px solid var(--color-line-soft);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--color-cream-soft);
+}
+.price-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1.5rem;
+  padding: 1.1rem 1.4rem;
+}
+.price-row + .price-row { border-top: 1px solid var(--color-line-soft); }
+.price-row__info h4 { margin: 0 0 0.25rem; font-size: var(--fs-md); font-family: var(--font-sans); }
+.price-row__info p { margin: 0; font-size: var(--fs-sm); color: var(--color-ink-soft); }
+.price-row__extra { color: var(--color-olive) !important; }
+.price-row__price {
+  flex-shrink: 0;
+  font-weight: 600;
+  color: var(--color-olive-deep);
+  white-space: nowrap;
+}
+.price-list__schedule {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: var(--fs-sm);
+  color: var(--color-olive-deep);
+  margin-bottom: 1rem;
+}
+
+/* ---------- Booking price options / drip picker ---------- */
+.price-option {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  width: 100%;
+  text-align: left;
+  padding: 1rem 1.25rem;
+  border: 1.5px solid var(--color-line-soft);
+  border-radius: var(--radius-md);
+  background: var(--color-white, #fff);
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+.price-option:hover { border-color: var(--color-olive); }
+.price-option.is-selected {
+  border-color: var(--color-olive-deep);
+  background: var(--color-tea-soft);
+}
+.price-option h4 { margin: 0 0 0.2rem; font-size: var(--fs-md); font-family: var(--font-sans); }
+.price-option p { margin: 0; font-size: var(--fs-sm); color: var(--color-ink-soft); }
+.price-option .price-option__price {
+  flex-shrink: 0;
+  font-weight: 600;
+  color: var(--color-olive-deep);
+  white-space: nowrap;
+}
+.price-option__extras {
+  margin: 0.5rem 0 0.75rem;
+  padding: 0.75rem 1rem;
+  background: var(--color-cream-soft);
+  border-radius: var(--radius-md);
+}
+.booking-total {
+  display: flex;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  background: var(--color-tea-soft);
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  color: var(--color-olive-deep);
+}
+
+/* ---------- Inline auth panel (booking step 3) + account pages ---------- */
+.auth-panel {
+  padding: 1.1rem 1.4rem;
+  border: 1px dashed var(--color-line-soft);
+  border-radius: var(--radius-md);
+  background: var(--color-cream-soft);
+  margin-bottom: 1.5rem;
+  font-size: var(--fs-sm);
+}
+.auth-panel--active {
+  border-style: solid;
+  background: var(--color-tea-soft);
+  color: var(--color-olive-deep);
+}
+.auth-panel .field { margin-bottom: 0.75rem; }
+
+/* ---------- Admin view tabs ---------- */
+.admin-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+.admin-tab {
+  padding: 0.5rem 1.1rem;
+  border: 1px solid var(--color-line-soft);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  font-size: var(--fs-sm);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.admin-tab.is-active {
+  background: var(--color-olive-deep);
+  border-color: var(--color-olive-deep);
+  color: var(--color-cream, #fffdd0);
+}
+.pricing-editor .price-row input[type="number"] {
+  width: 110px;
+  padding: 0.35rem 0.5rem;
+  border: 1px solid var(--color-line-soft);
+  border-radius: var(--radius-sm, 6px);
+  text-align: right;
+}
+
 /* ---------- Misc effects ---------- */
 .blob {
   position: absolute;

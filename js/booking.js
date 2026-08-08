@@ -1,21 +1,52 @@
-/* WellMed — Multi-step booking flow
-   Steps: 1 service · 2 slot · 3 personal + medical aid · 4 medical + consent · 5 confirmation
-*/
+/* WellMed — Multi-step booking flow (shared by two pages)
+   Standard mode (book-appointment.html): 1 service + price option · 2 slot · 3 details · 4 consent · 5 confirmation
+   IV mode (book-iv-therapy.html, set window.WM_BOOKING_MODE = "iv"):
+                                          1 drip menu · 2 slot · 3 details · 4 consent · 5 confirmation
+   Prices come from the admin-maintained catalog (js/pricing.js); the backend
+   re-resolves prices server-side, so only ids are submitted. */
 (function () {
+  const MODE = window.WM_BOOKING_MODE || "standard";
+
   const state = {
     step: 1,
-    service: null,
+    service: MODE === "iv" ? "iv-therapy" : null,
     date: null,
     slot: null,
     personal: {},
-    medical: {},
-    consent: false
+    consent: false,
+    pricing: null,        // { itemId, extras: [ids] } | null
+    catalog: null
   };
 
   const $ = (sel) => document.querySelector(sel);
   const $$ = (sel) => document.querySelectorAll(sel);
+  const esc = (s) => String(s ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
 
-  /* -------- Step 1: Service select -------- */
+  async function ensureCatalog() {
+    if (state.catalog) return state.catalog;
+    try {
+      state.catalog = await WM.pricing.load();
+    } catch (e) {
+      state.catalog = null; // degrade: booking proceeds without a price selection
+    }
+    return state.catalog;
+  }
+
+  /* Current selection resolved against the catalog, for display only. */
+  function pricingInfo() {
+    if (!state.pricing || !state.catalog) return null;
+    const item = WM.pricing.item(state.catalog, state.pricing.itemId);
+    if (!item || item.price == null) return null;
+    const extras = (item.extras || []).filter(x => state.pricing.extras.includes(x.id));
+    return {
+      name: item.name,
+      base: Number(item.price),
+      extras,
+      total: Number(item.price) + extras.reduce((sum, x) => sum + Number(x.price || 0), 0)
+    };
+  }
+
+  /* -------- Step 1 (standard): service select + price option -------- */
   function renderServices() {
     const wrap = $("#serviceTiles");
     wrap.innerHTML = WM.services.map(s => `
@@ -32,11 +63,13 @@
 
     wrap.querySelectorAll(".service-tile").forEach(tile => {
       tile.addEventListener("click", () => {
+        const svc = WM.services.find(s => s.slug === tile.dataset.slug);
+        if (svc && svc.bookPage) { location.href = svc.bookPage; return; } // IV has its own flow
         wrap.querySelectorAll(".service-tile").forEach(t => { t.classList.remove("is-selected"); t.setAttribute("aria-pressed","false"); });
         tile.classList.add("is-selected");
         tile.setAttribute("aria-pressed","true");
         state.service = tile.dataset.slug;
-        $("#nextBtn1").disabled = false;
+        renderPriceOptions();
       });
     });
 
@@ -47,6 +80,130 @@
       const tile = wrap.querySelector(`[data-slug="${pre}"]`);
       if (tile) tile.click();
     }
+  }
+
+  /* Options for the selected service (packages / sessions / fixed test price). */
+  async function renderPriceOptions() {
+    const box = $("#priceOptions");
+    if (!box) { $("#nextBtn1").disabled = !state.service; return; }
+    state.pricing = null;
+    const map = WM.pricingMap[state.service];
+    if (!map) { // e.g. GP, weight loss — no price selection
+      box.innerHTML = "";
+      $("#nextBtn1").disabled = false;
+      return;
+    }
+
+    box.innerHTML = `<p class="muted" style="margin: 1.5rem 0 0;">Loading options…</p>`;
+    $("#nextBtn1").disabled = true;
+    const catalog = await ensureCatalog();
+    if (!catalog) { // pricing API down — let the booking continue without it
+      box.innerHTML = "";
+      $("#nextBtn1").disabled = false;
+      return;
+    }
+
+    const cat = WM.pricing.category(catalog, map.category);
+    const items = ((cat && cat.items) || []).filter(i => i.price != null);
+    if (!items.length) { box.innerHTML = ""; $("#nextBtn1").disabled = false; return; }
+
+    if (map.itemId) { // fixed-price service (tests) — auto-selected
+      const item = items.find(i => i.id === map.itemId);
+      if (!item) { box.innerHTML = ""; $("#nextBtn1").disabled = false; return; }
+      state.pricing = { itemId: item.id, extras: [] };
+      box.innerHTML = `
+        <div class="booking-total" style="margin-top: 1.5rem;">
+          <span>${esc(item.name)}</span><span>${WM.pricing.fmt(item.price)}</span>
+        </div>`;
+      $("#nextBtn1").disabled = false;
+      return;
+    }
+
+    box.innerHTML = `
+      <p style="font-size: var(--fs-xs); letter-spacing: 0.18em; text-transform: uppercase; color: var(--color-olive); margin: 1.75rem 0 0.75rem;">Choose an option</p>
+      <div class="d-grid gap-2">
+        ${items.map(i => `
+          <button type="button" class="price-option" data-item="${esc(i.id)}" aria-pressed="false">
+            <div><h4>${esc(i.name)}</h4>${i.description ? `<p>${esc(i.description)}</p>` : ""}</div>
+            <span class="price-option__price">${WM.pricing.fmt(i.price)}</span>
+          </button>
+        `).join("")}
+      </div>`;
+    bindOptionButtons(box, items);
+  }
+
+  function bindOptionButtons(box, items) {
+    box.querySelectorAll(".price-option").forEach(btn => {
+      btn.addEventListener("click", () => {
+        box.querySelectorAll(".price-option").forEach(b => { b.classList.remove("is-selected"); b.setAttribute("aria-pressed","false"); });
+        btn.classList.add("is-selected");
+        btn.setAttribute("aria-pressed","true");
+        state.pricing = { itemId: btn.dataset.item, extras: [] };
+        box.querySelectorAll(".price-option__extras").forEach(x => {
+          x.hidden = x.dataset.extrasFor !== btn.dataset.item;
+          if (x.hidden) x.querySelectorAll("input:checked").forEach(c => { c.checked = false; });
+        });
+        updateExtrasFromChecks(box);
+        $("#nextBtn1").disabled = false;
+      });
+    });
+    box.querySelectorAll(".price-option__extras input[type=checkbox]").forEach(chk => {
+      chk.addEventListener("change", () => updateExtrasFromChecks(box));
+    });
+  }
+
+  function updateExtrasFromChecks(box) {
+    if (!state.pricing) return;
+    const block = box.querySelector(`.price-option__extras[data-extras-for="${state.pricing.itemId}"]`);
+    state.pricing.extras = block
+      ? [...block.querySelectorAll("input:checked")].map(c => c.dataset.extra)
+      : [];
+    const info = pricingInfo();
+    const totalEl = $("#dripTotal");
+    if (totalEl && info) totalEl.innerHTML = `<span>${esc(info.name)}${info.extras.length ? " + extras" : ""}</span><span>${WM.pricing.fmt(info.total)}</span>`;
+  }
+
+  /* -------- Step 1 (IV mode): drip menu -------- */
+  async function renderDripMenu() {
+    const box = $("#dripMenu");
+    box.innerHTML = `<p class="muted">Loading our drip menu…</p>`;
+    const catalog = await ensureCatalog();
+    const cat = catalog && WM.pricing.category(catalog, "iv-therapy");
+    const items = ((cat && cat.items) || []).filter(i => i.price != null);
+    if (!items.length) {
+      box.innerHTML = `<p class="muted">We couldn't load the drip menu right now. You can continue and choose your drip at the practice, or call ${WM.brand.phone}.</p>`;
+      $("#nextBtn1").disabled = false;
+      return;
+    }
+
+    box.innerHTML = `
+      <div class="d-grid gap-2">
+        ${items.map(i => `
+          <div>
+            <button type="button" class="price-option" data-item="${esc(i.id)}" aria-pressed="false">
+              <div><h4>${esc(i.name)}</h4>${i.description ? `<p>${esc(i.description)}</p>` : ""}</div>
+              <span class="price-option__price">${WM.pricing.fmt(i.price)}</span>
+            </button>
+            ${(i.extras || []).length ? `
+              <div class="price-option__extras" data-extras-for="${esc(i.id)}" hidden>
+                ${i.extras.map(x => `
+                  <label class="checkbox-wm" style="margin: 0;">
+                    <input type="checkbox" data-extra="${esc(x.id)}" />
+                    <span>Add ${esc(x.name)} (+${WM.pricing.fmt(x.price)})</span>
+                  </label>
+                `).join("")}
+              </div>` : ""}
+          </div>
+        `).join("")}
+      </div>
+      <div class="booking-total" id="dripTotal" style="margin-top: 1.25rem;" hidden></div>`;
+
+    bindOptionButtons(box, items);
+    // reveal + populate the running total once a drip is picked
+    box.querySelectorAll(".price-option").forEach(btn => btn.addEventListener("click", () => {
+      $("#dripTotal").hidden = false;
+      updateExtrasFromChecks(box);
+    }));
   }
 
   /* -------- Step 2: Date + slot -------- */
@@ -90,7 +247,10 @@
     slots = slots.filter(s => new Date(s.start).getTime() > now);
 
     if (!slots.length) {
-      grid.innerHTML = `<div class="muted" style="grid-column: 1/-1; text-align: center; padding: 2rem;">No availability on this day. Try another date.</div>`;
+      const yogaHint = state.service === "yoga-breathwork"
+        ? " Yoga classes run on Tuesdays 17:30 and Fridays 17:00."
+        : "";
+      grid.innerHTML = `<div class="muted" style="grid-column: 1/-1; text-align: center; padding: 2rem;">No availability on this day. Try another date.${yogaHint}</div>`;
       return;
     }
 
@@ -108,18 +268,85 @@
     });
   }
 
-  /* -------- Step 3: Personal + Medical Aid -------- */
+  /* -------- Step 3: Your details (+ profile login/autofill) -------- */
+  function renderAuthPanel() {
+    const panel = $("#authPanel");
+    if (!panel || !window.WMAuth) return;
+    const session = WMAuth.getSession();
+
+    if (session) {
+      const m = session.member;
+      panel.className = "auth-panel auth-panel--active";
+      panel.innerHTML = `
+        Booking as <strong>${esc(m.firstName)} ${esc(m.lastName)}</strong> (${esc(m.email)}) — your saved details are filled in below.
+        <a href="#" id="authSignOut" style="margin-left: 0.5rem;">Not you? Sign out</a>`;
+      panel.querySelector("#authSignOut").addEventListener("click", (e) => {
+        e.preventDefault();
+        WMAuth.logout(false);
+        renderAuthPanel();
+      });
+      prefillFromMember(m);
+      return;
+    }
+
+    panel.className = "auth-panel";
+    panel.innerHTML = `
+      <strong>Booked with us before?</strong> Log in and we'll fill in your details automatically.
+      <div class="row g-2" style="margin-top: 0.75rem;">
+        <div class="col-md-5"><div class="field" style="margin:0;"><input type="email" id="authEmail" placeholder="Email" autocomplete="email" /></div></div>
+        <div class="col-md-4"><div class="field" style="margin:0;"><input type="password" id="authPassword" placeholder="Password" autocomplete="current-password" /></div></div>
+        <div class="col-md-3"><button type="button" class="btn-wm btn-wm--primary btn-wm--sm" id="authLoginBtn" style="width: 100%;">Log in</button></div>
+      </div>
+      <div id="authError" style="color: var(--color-danger); margin-top: 0.5rem;" hidden></div>
+      <p class="muted" style="margin: 0.75rem 0 0;">First visit? Book as usual — you can create your profile at the end.</p>`;
+
+    panel.querySelector("#authLoginBtn").addEventListener("click", async () => {
+      const btn = panel.querySelector("#authLoginBtn");
+      const errEl = panel.querySelector("#authError");
+      errEl.hidden = true;
+      btn.disabled = true;
+      btn.textContent = "Logging in…";
+      try {
+        await WMAuth.login({ email: $("#authEmail").value, password: $("#authPassword").value });
+        renderAuthPanel();
+      } catch (err) {
+        btn.disabled = false;
+        btn.textContent = "Log in";
+        errEl.textContent = err.message;
+        errEl.hidden = false;
+      }
+    });
+  }
+
+  function prefillFromMember(m) {
+    const setIfEmpty = (id, value) => {
+      const el = document.getElementById(id);
+      if (el && !el.value && value) el.value = value;
+    };
+    setIfEmpty("fName", m.firstName);
+    setIfEmpty("lName", m.lastName);
+    setIfEmpty("dob", m.dob);
+    setIfEmpty("tel", m.phone);
+    setIfEmpty("email", m.email);
+    const ma = m.medicalAid || {};
+    setIfEmpty("maProvider", ma.provider);
+    setIfEmpty("maNumber", ma.memberNumber);
+    setIfEmpty("maMember", ma.mainMember);
+    setIfEmpty("maDependent", ma.dependentCode);
+  }
+
   function bindPersonal() {
-    const ids = ["fName","lName","idNum","tel","email","emergencyName","emergencyTel","maProvider","maNumber","maMember","maDependent"];
-    ids.forEach(id => {
+    ["fName","lName","dob","tel","email","maProvider","maNumber","maMember","maDependent"].forEach(id => {
       const el = document.getElementById(id);
       if (!el) return;
       el.addEventListener("input", () => el.closest(".field")?.classList.remove("has-error"));
     });
+    const dobEl = document.getElementById("dob");
+    if (dobEl) dobEl.max = new Date().toISOString().slice(0, 10);
   }
 
   function validatePersonal() {
-    const required = ["fName","lName","idNum","tel","email","emergencyName","emergencyTel"];
+    const required = ["fName","lName","dob","tel","email"];
     let ok = true;
     required.forEach(id => {
       const el = document.getElementById(id);
@@ -131,10 +358,9 @@
       state.personal = {
         firstName: fName.value.trim(),
         lastName: lName.value.trim(),
-        idOrPassport: idNum.value.trim(),
+        dob: dob.value,
         phone: tel.value.trim(),
         email: email.value.trim(),
-        emergencyContact: { name: emergencyName.value.trim(), phone: emergencyTel.value.trim() },
         medicalAid: {
           provider: maProvider.value.trim() || null,
           memberNumber: maNumber.value.trim() || null,
@@ -146,35 +372,16 @@
     return ok;
   }
 
-  /* -------- Step 4: Medical history + consent -------- */
-  function validateMedical() {
+  /* -------- Step 4: Consent -------- */
+  function validateConsent() {
     const consentEl = document.getElementById("consent");
-    const popiaEl = document.getElementById("popia");
-    let ok = true;
-    [consentEl, popiaEl].forEach(el => {
-      const valid = el.checked;
-      el.closest(".checkbox-wm")?.classList.toggle("has-error", !valid);
-      if (!valid) ok = false;
-    });
-    if (ok) {
-      state.medical = {
-        existingConditions: document.getElementById("conditions").value.trim(),
-        allergies: document.getElementById("allergies").value.trim(),
-        currentMeds: document.getElementById("meds").value.trim(),
-        reasonForVisit: document.getElementById("reason").value.trim(),
-        notes: document.getElementById("notes").value.trim(),
-        marketingOptIn: document.getElementById("marketing").checked
-      };
-      state.consent = true;
-    }
-    return ok;
+    const valid = consentEl.checked;
+    consentEl.closest(".checkbox-wm")?.classList.toggle("has-error", !valid);
+    state.consent = valid;
+    return valid;
   }
 
   /* -------- Booking confirmation email -------- */
-  // The availability API doesn't expose per-service appointment length, so we
-  // assume the standard slot length used to generate booking slots.
-  const APPOINTMENT_DURATION_MINUTES = 30;
-
   async function sendNotificationEmail(email, name, message, event) {
     try {
       const r = await fetch(WM.notificationApi.url, {
@@ -196,10 +403,13 @@
   }
 
   async function sendBookingConfirmationEmail(serviceTitle, startDate) {
-    const endDate = new Date(startDate.getTime() + APPOINTMENT_DURATION_MINUTES * 60000);
+    const duration = WM.serviceDurations[state.service] || 30;
+    const endDate = new Date(startDate.getTime() + duration * 60000);
     const patientName = `${state.personal.firstName} ${state.personal.lastName}`.trim();
+    const info = pricingInfo();
+    const priceText = info ? ` (${info.name} — ${WM.pricing.fmt(info.total)}, payable at the practice)` : "";
     const event = {
-      title: `${serviceTitle} — ${WM.brand.name}`,
+      title: `${serviceTitle}${info ? " · " + info.name : ""} — ${WM.brand.name}`,
       location: WM.brand.address,
       startTime: startDate.toISOString(),
       endTime: endDate.toISOString()
@@ -208,13 +418,13 @@
       sendNotificationEmail(
         state.personal.email,
         patientName,
-        `Hi ${state.personal.firstName}, your ${serviceTitle} appointment with ${WM.brand.doctor} is confirmed. We look forward to seeing you at ${WM.brand.address}.`,
+        `Hi ${state.personal.firstName}, your ${serviceTitle} appointment${priceText} with ${WM.brand.doctor} is confirmed. We look forward to seeing you at ${WM.brand.address}.`,
         event
       ),
       sendNotificationEmail(
         WM.brand.email,
         WM.brand.doctor,
-        `New booking: ${patientName} has booked a ${serviceTitle} appointment on ${startDate.toLocaleString("en-ZA")}.`,
+        `New booking: ${patientName} has booked a ${serviceTitle} appointment${priceText} on ${startDate.toLocaleString("en-ZA")}.`,
         event
       )
     ]);
@@ -226,7 +436,7 @@
       service: state.service,
       requestedSlot: state.slot,
       personal: state.personal,
-      medical: state.medical,
+      pricing: state.pricing,
       consent: state.consent,
       submittedAt: new Date().toISOString()
     };
@@ -256,13 +466,58 @@
 
     await sendBookingConfirmationEmail(svc, dt);
 
+    const info = pricingInfo();
     document.getElementById("confSummary").innerHTML = `
       <div style="font-size: var(--fs-xs); letter-spacing: 0.18em; text-transform: uppercase; color: var(--color-olive); margin-bottom: 0.5rem;">Your appointment</div>
-      <h3 style="margin: 0 0 0.5rem;">${svc}</h3>
+      <h3 style="margin: 0 0 0.5rem;">${esc(svc)}${info ? ` · ${esc(info.name)}` : ""}</h3>
       <p style="margin: 0; color: var(--color-ink);">${fmtDate} at ${fmtTime}</p>
+      ${info ? `
+        <hr style="border: 0; border-top: 1px solid var(--color-line-soft); margin: 0.9rem 0;" />
+        ${info.extras.map(x => `<p style="margin: 0; font-size: var(--fs-sm);">+ ${esc(x.name)} — ${WM.pricing.fmt(x.price)}</p>`).join("")}
+        <p style="margin: 0.35rem 0 0; font-weight: 600; color: var(--color-olive-deep);">Total: ${WM.pricing.fmt(info.total)} <span style="font-weight: 400; color: var(--color-ink-soft);">(payable at the practice)</span></p>
+      ` : ""}
     `;
     document.getElementById("confName").textContent = state.personal.firstName;
     document.getElementById("confEmail").textContent = state.personal.email;
+    renderProfileOffer();
+  }
+
+  /* -------- Step 5: offer to save a profile (first-time visitors) -------- */
+  function renderProfileOffer() {
+    const box = document.getElementById("profileOffer");
+    if (!box || !window.WMAuth) return;
+    if (WMAuth.isAuthenticated()) { box.innerHTML = ""; return; }
+
+    box.innerHTML = `
+      <div class="auth-panel" style="max-width: 460px; margin: 2rem auto 0; text-align: left;">
+        <h4 style="margin: 0 0 0.35rem; font-size: var(--fs-md); font-family: var(--font-sans);">Save your details for next time</h4>
+        <p class="muted" style="margin: 0 0 0.9rem;">Create a password and your next booking takes seconds — no forms to refill.</p>
+        <div class="field"><input type="password" id="profPassword" placeholder="Choose a password (min 8 characters)" autocomplete="new-password" minlength="8" /></div>
+        <div class="field"><input type="password" id="profPassword2" placeholder="Confirm password" autocomplete="new-password" minlength="8" /></div>
+        <button type="button" class="btn-wm btn-wm--primary btn-wm--sm" id="profCreateBtn">Create my profile</button>
+        <div id="profError" style="color: var(--color-danger); margin-top: 0.5rem;" hidden></div>
+      </div>`;
+
+    box.querySelector("#profCreateBtn").addEventListener("click", async () => {
+      const errEl = box.querySelector("#profError");
+      const pw = box.querySelector("#profPassword").value;
+      const pw2 = box.querySelector("#profPassword2").value;
+      errEl.hidden = true;
+      if (pw.length < 8) { errEl.textContent = "Password must be at least 8 characters."; errEl.hidden = false; return; }
+      if (pw !== pw2)    { errEl.textContent = "Passwords don't match."; errEl.hidden = false; return; }
+      const btn = box.querySelector("#profCreateBtn");
+      btn.disabled = true;
+      btn.textContent = "Creating…";
+      try {
+        await WMAuth.register({ ...state.personal, password: pw, medicalAid: state.personal.medicalAid });
+        box.innerHTML = `<div class="auth-panel auth-panel--active" style="max-width: 460px; margin: 2rem auto 0;">Profile created — you're signed in. Next time, just log in and book.</div>`;
+      } catch (err) {
+        btn.disabled = false;
+        btn.textContent = "Create my profile";
+        errEl.textContent = err.message;
+        errEl.hidden = false;
+      }
+    });
   }
 
   /* -------- Step navigation -------- */
@@ -273,6 +528,7 @@
       el.classList.toggle("is-active", i+1 === n);
       el.classList.toggle("is-done", i+1 < n);
     });
+    if (n === 3) renderAuthPanel();
     const anchor = document.getElementById("bookingTop");
     if (anchor) window.scrollTo({ top: anchor.offsetTop - 80, behavior: "smooth" });
   }
@@ -289,7 +545,7 @@
     $("#nextBtn3").addEventListener("click", () => { if (validatePersonal()) goTo(4); });
     $("#prevBtn4").addEventListener("click", () => goTo(3));
     $("#submitBtn").addEventListener("click", async () => {
-      if (!validateMedical()) return;
+      if (!validateConsent()) return;
       const btn = document.getElementById("submitBtn");
       btn.disabled = true;
       btn.textContent = "Submitting…";
@@ -305,7 +561,12 @@
   }
 
   document.addEventListener("DOMContentLoaded", () => {
-    renderServices();
+    if (MODE === "iv") {
+      renderDripMenu();
+      $("#nextBtn1").disabled = true;
+    } else {
+      renderServices();
+    }
     renderDate();
     bindPersonal();
     bindNav();

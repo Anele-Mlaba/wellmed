@@ -18,12 +18,22 @@
         { label: "Ozone Therapy",       href: url("pages/services/ozone-therapy.html") },
         { label: "Red Light Therapy",   href: url("pages/services/red-light-therapy.html") },
         { label: "Medical Weight Loss", href: url("pages/services/weight-loss.html") },
-        { label: "Yoga · Breathwork",   href: url("pages/services/yoga-breathwork.html") }
+        { label: "Yoga · Breathwork",   href: url("pages/services/yoga-breathwork.html") },
+        { label: "Tests & Gut Health",  href: url("pages/services/tests-gut-health.html") }
       ]
     },
     // { label: "Art of Living", href: url("pages/art-of-living.html") },
     { label: "Contact", href: url("pages/contact.html") }
   ];
+
+  /* Patient session (auth.js is optional on a page — degrade gracefully) */
+  function authLink() {
+    if (!window.WMAuth) return null;
+    const session = WMAuth.getSession();
+    return session
+      ? { label: (session.member.firstName || "My Account"), href: url("pages/account.html"), cls: "nav-auth" }
+      : { label: "Sign In", href: url("pages/login.html"), cls: "nav-auth" };
+  }
 
   function buildDesktopMenu() {
     return NAV_ITEMS.map(item => {
@@ -45,6 +55,8 @@
         html += `<li><a href="${item.href}">${item.label}</a></li>`;
       }
     });
+    const auth = authLink();
+    if (auth) html += `<li><a href="${auth.href}">${auth.label}</a></li>`;
     html += `<li><a href="${url("pages/book-appointment.html")}" class="btn-wm btn-wm--primary" style="margin-top: 1rem; display:inline-flex;">Book Appointment</a></li>`;
     html += `</ul>`;
     return html;
@@ -62,6 +74,7 @@
           </a>
           <ul class="nav-wm__menu d-lg-flex" role="menubar">${buildDesktopMenu()}</ul>
           <div class="nav-wm__cta">
+            ${(() => { const a = authLink(); return a ? `<a href="${a.href}" class="btn-wm btn-wm--ghost btn-wm--sm d-none d-lg-inline-flex">${WM.icons.user} <span class="d-none d-xl-inline">${a.label}</span></a>` : ""; })()}
             <a href="tel:${WM.brand.phone.replace(/\s/g,'')}" class="btn-wm btn-wm--ghost btn-wm--sm">${WM.icons.phone} <span class="d-none d-xl-inline">${WM.brand.phone}</span></a>
             <a href="${url("pages/book-appointment.html")}" class="btn-wm btn-wm--primary btn-wm--sm">Book Appointment</a>
             <button class="nav-wm__burger" id="navBurger" aria-label="Open menu" aria-expanded="false">
@@ -122,7 +135,7 @@
     const target = document.getElementById("site-footer");
     if (!target) return;
     const serviceLinks = WM.services.map(s =>
-      `<a href="${url('pages/services/' + s.slug + '.html')}">${s.title}</a>`
+      `<a href="${url(s.page || 'pages/services/' + s.slug + '.html')}">${s.title}</a>`
     ).join("");
 
     target.innerHTML = `

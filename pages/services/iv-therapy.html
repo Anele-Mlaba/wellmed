@@ -24,8 +24,8 @@
     <h1 class="text-balance">Replenish what life depletes.<br/><em class="serif">A drip designed for you.</em></h1>
     <p class="lead">Doctor-prescribed IV vitamin and mineral therapy in our calm Umhlanga lounge. 100% bioavailability, comfortable recliners, 30–60 minute sessions.</p>
     <div style="display:flex; gap: 0.75rem; margin-top: 2rem; flex-wrap: wrap;">
-      <a href="../book-appointment.html?service=iv-therapy" class="btn-wm btn-wm--primary btn-wm--lg">Book an IV Session →</a>
-      <!--a href="#blends" class="btn-wm btn-wm--ghost btn-wm--lg">See our blends</a-->
+      <a href="../book-iv-therapy.html" class="btn-wm btn-wm--primary btn-wm--lg">Book an IV Session →</a>
+      <a href="#pricing" class="btn-wm btn-wm--ghost btn-wm--lg">See our drip menu</a>
     </div>
   </div>
 </section>
@@ -48,22 +48,16 @@
   </div>
 </section>
 
-<!--section class="section section--cream" id="blends">
+<section class="section section--cream" id="pricing">
   <div class="container-wm">
     <div class="text-center" style="max-width: 720px; margin: 0 auto var(--space-7);">
-      <span class="eyebrow reveal">Our Signature Blends</span>
-      <h2 class="reveal text-balance">Drips designed by a doctor for life as you actually live it.</h2>
+      <span class="eyebrow reveal">Our Drip Menu</span>
+      <h2 class="reveal text-balance">Doctor-designed drips,<br/><em class="serif">transparent prices.</em></h2>
+      <p class="lead reveal">Every drip is still prescribed after a brief consult — but here's the menu, so you know what to expect.</p>
     </div>
-    <div class="row g-4">
-      <div class="col-lg-4 col-md-6 reveal"><div class="card-wm h-100"><span class="pill pill--apricot">Most Loved</span><h4 style="margin-top:1rem;">The Energise</h4><p>B-complex, B12, magnesium, taurine a clean lift for the chronically tired and the post-flight foggy.</p><p class="muted" style="font-size: var(--fs-xs);">~45 min</p></div></div>
-      <div class="col-lg-4 col-md-6 reveal"><div class="card-wm h-100"><span class="pill">Immunity</span><h4 style="margin-top:1rem;">The Defender</h4><p>High-dose vitamin C, zinc, selenium for cold-and-flu season, big travel weeks, or running yourself ragged.</p><p class="muted" style="font-size: var(--fs-xs);">~60 min</p></div></div>
-      <div class="col-lg-4 col-md-6 reveal"><div class="card-wm h-100"><span class="pill">Glow</span><h4 style="margin-top:1rem;">The Glutathione Glow</h4><p>Glutathione + vitamin C the antioxidant pair behind clearer skin, lighter mornings and better recovery.</p><p class="muted" style="font-size: var(--fs-xs);">~30 min</p></div></div>
-      <div class="col-lg-4 col-md-6 reveal"><div class="card-wm h-100"><span class="pill">Recover</span><h4 style="margin-top:1rem;">The Reset</h4><p>Hydration + electrolytes + B-complex the morning after, the marathon after, the rough week after.</p><p class="muted" style="font-size: var(--fs-xs);">~30 min</p></div></div>
-      <div class="col-lg-4 col-md-6 reveal"><div class="card-wm h-100"><span class="pill pill--apricot">Performance</span><h4 style="margin-top:1rem;">The Athlete</h4><p>Amino acids, magnesium, B-complex, vitamin C for training cycles and faster muscle recovery.</p><p class="muted" style="font-size: var(--fs-xs);">~45 min</p></div></div>
-      <div class="col-lg-4 col-md-6 reveal"><div class="card-wm h-100"><span class="pill">Bespoke</span><h4 style="margin-top:1rem;">The Custom</h4><p>After your consult, Dr Moodley will compound exactly what your bloods say you need. Nothing more, nothing less.</p><p class="muted" style="font-size: var(--fs-xs);">~30–60 min</p></div></div>
-    </div>
+    <div id="pricingList"></div>
   </div>
-</section-->
+</section>
 
 <!--section class="section">
   <div class="container-wm">
@@ -105,7 +99,7 @@
 <section class="section section--olive">
   <div class="container-wm text-center">
     <h2 class="reveal text-balance">Ready to refill?<br/><em class="serif">Book a drip — your body will thank you.</em></h2>
-    <a href="../book-appointment.html?service=iv-therapy" class="btn-wm btn-wm--accent btn-wm--lg reveal" style="margin-top: 2rem;">Book IV Therapy →</a>
+    <a href="../book-iv-therapy.html" class="btn-wm btn-wm--accent btn-wm--lg reveal" style="margin-top: 2rem;">Book IV Therapy →</a>
   </div>
 </section>
 
@@ -113,6 +107,14 @@
 <div id="site-fab"></div>
 <script src="../../js/config.js"></script>
 <script src="../../js/icons.js"></script>
+<script src="../../js/auth.js"></script>
 <script src="../../js/layout.js"></script>
+<script src="../../js/pricing.js"></script>
+<script>
+  WM.pricing.renderCategory(document.getElementById("pricingList"), "iv-therapy", {
+    bookHref: "../book-iv-therapy.html",
+    bookLabel: "Book your drip"
+  });
+</script>
 </body>
 </html>

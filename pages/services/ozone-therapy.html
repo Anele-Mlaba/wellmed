@@ -91,6 +91,16 @@
   </div>
 </section-->
 
+<section class="section section--cream" id="pricing">
+  <div class="container-wm">
+    <div class="text-center" style="max-width: 720px; margin: 0 auto var(--space-7);">
+      <span class="eyebrow reveal">Pricing</span>
+      <h2 class="reveal text-balance">Simple sessions,<br/><em class="serif">honest prices.</em></h2>
+    </div>
+    <div id="pricingList"></div>
+  </div>
+</section>
+
 <section class="section section--olive">
   <div class="container-wm text-center">
     <h2 class="reveal text-balance">Curious whether ozone is right for you?<br/><em class="serif">A consult is the place to find out.</em></h2>
@@ -102,6 +112,14 @@
 <div id="site-fab"></div>
 <script src="../../js/config.js"></script>
 <script src="../../js/icons.js"></script>
+<script src="../../js/auth.js"></script>
 <script src="../../js/layout.js"></script>
+<script src="../../js/pricing.js"></script>
+<script>
+  WM.pricing.renderCategory(document.getElementById("pricingList"), "ozone-therapy", {
+    bookHref: "../book-appointment.html?service=ozone-therapy",
+    bookLabel: "Book ozone therapy"
+  });
+</script>
 </body>
 </html>
